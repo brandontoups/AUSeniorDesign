@@ -1,5 +1,6 @@
 import requests
 import urllib
+from selenium import webdriver
 from bs4 import BeautifulSoup
 
 website = "https://www.titlesearcher.com/"
@@ -19,10 +20,11 @@ with requests.Session() as s:
     soup = BeautifulSoup(homePage.text, 'html.parser')
     county = raw_input("Please enter the county for which you would like to " +
                         "perform a title search. ")
+
     county = county.upper()
     countySearch = ''
     for link in soup.find_all('a'):
-        if (link.find(text=True).strip() == 'New Search'):
+        if (link.text.strip() == 'New Search'):
             countySearch = link['href']
             break
 
@@ -30,15 +32,17 @@ with requests.Session() as s:
     soup = BeautifulSoup(p.text, 'html.parser')
     countyPage = ''
     for link in soup.find_all('a'):
-        if (link.find(text=True).strip() == county):
+        if (link.text.strip() == county):
             countyPage = link['href']
             break
 
     p = s.get(website + str(countyPage))
+
+
     soup = BeautifulSoup(p.text, 'html.parser')
     search = ''
     for link in soup.find_all('a'):
-        if (link.find(text=True).strip() == 'SEARCH ' + county):
+        if (link.text.strip() == 'SEARCH ' + county):
             search = link['href']
             break
 
@@ -46,9 +50,10 @@ with requests.Session() as s:
     soup = BeautifulSoup(p.text, 'html.parser')
     bookSearch = ''
     for link in soup.find_all('a'):
-        if (link.find(text=True) == 'Search By Book And Page / File #'):
-            bookSearch = link['href']
-            break
+        for link2 in link.find_all('font'):
+            if (link2.text.strip() == 'Search By Book And Page / File #'):
+                bookSearch = link['href']
+                break
 
     # Prompt user for book number and page number.
     bookNumber = raw_input("Please enter the book number. ")
@@ -68,28 +73,27 @@ with requests.Session() as s:
     imageDirectory = raw_input("Please enter the directory - relative to the " +
                             "current one - where the images will be saved. ")
 
-    # Parse html code to find ACCTID and image metadata.
+    # Parse HTML code to find image metadata.
     soup = BeautifulSoup(p.text, 'html.parser')
-    imageLink = ''
-    for link in soup.find_all('a', attrs = {'onclick' : True}):
-        attributes_dictionary = link.attrs
-        if ('onclick' in attributes_dictionary):
-            print(attributes_dictionary['onclick'])
-        #imageLink = link['onclick']
-        #Parse onclick attribute
+    urlBody = ''
+    urlTotal = ''
 
+    i = 0
+    for link in soup.find_all('a'):
+        if link.has_attr('onclick'):
+            onclick = link.get('onclick')
+            if (onclick[0:4] == 'load'):
+                onclickList = onclick.split("'")
+                urlBody = onclickList[1]
+                urlTotal = website + 'imgview.php?' + urlBody
+                if (imageFormat == 'TIFF'):
+                    urlTotal += '&imgtype=tiff'
+                elif (imageFormat == 'PDF'):
+                    urlTotal += '&imgtype=pdf'
+                #urlTotal += '&ACCTID='
+                #urlTotal += acctid
+                urllib.urlretrieve(urlTotal, imageDirectory + '/image' + str(i))
+                i += 1
 
-
-
-#"imgMode=GS&instNum=95016095&year=1995&PHPSESSID=lb52j6ogs5j0tmro7vk1ftmne5"
-
-#"imgMode=GS&instNum=00042139&year=2000&PHPSESSID=lb52j6ogs5j0tmro7vk1ftmne5"
-
-
-#"https://www.titlesearcher.com/imgview.php?imgMode=GS&instNum=00042139&year=2000&PHPSESSID=lb52j6ogs5j0tmro7vk1ftmne5&imgtype=tiff&ACCTID=258305"
-
-
-#"imgMode=GS&instNum=13003358&year=2013&PHPSESSID=lb52j6ogs5j0tmro7vk1ftmne5"
-
-
-#urllib.urlretrieve("https://www.titlesearcher.com/imgview.php?imgMode=GS&instNum=95016095&year=1995&PHPSESSID=n5ih6i70f66nvr85onudirouv6&imgtype=tiff&ACCTID=258305", "img.tiff")
+    #https://www.titlesearcher.com/imgview.php?imgMode=GS&instNum=95016095&year=1995&PHPSESSID=v3h74j4o1lh3ep25ogg0qhg5g5&imgtype=pdf&ACCTID=258305
+    #https://www.titlesearcher.com/imgview.php?imgMode=GS&instNum=95016095&year=1995&PHPSESSID=v3h74j4o1lh3ep25ogg0qhg5g5&imgtype=tiff&ACCTID=258305
