@@ -9,6 +9,7 @@
 		<link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
 		<link rel="stylesheet" type="text/css" href="index.css" />
 	</head>
+	<% System.out.println("Testing"); %>
 	<body>
 		<div class="container">
 			<div class="header">

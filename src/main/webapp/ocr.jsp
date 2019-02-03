@@ -21,19 +21,24 @@
 				</div>
 			</form>
 		</div>
-		<% String heading = ""; %>
-		<% String extraInfo = ""; %>
-		<% if(request.getAttribute("document") != null) { %>
-		<%		heading = "Success"; %>
-		<%		extraInfo = "Document was successfully added to the collection."; %>
-		<% } else { %>
-		<%		heading = "Failure"; %>
-		<%		extraInfo = "An error occured during the operation. Document could not be added."; %>
+		<% 
+			String heading = "";
+			String extraInfo = "";
+			boolean isDocument = request.getAttribute("document") != null;
+			if(isDocument) {
+				heading = "Success"; 
+				extraInfo = "Document was successfully added to the collection."; 
+			} else { 
+				heading = "Failure"; 
+				extraInfo = "An error occured during the operation. Document could not be added."; 
+			} 
+		%>
+		<% if(isDocument) { %>
+			<div class="notification">
+				<h2 class="heading"><% out.println(heading); %></h2>
+				<p class="extraInfo"><% out.println(extraInfo); %></p>
+			</div>
 		<% } %>
-		<div class="notification">
-			<h2 class="heading"><% out.println(heading); %></h2>
-			<p class="extraInfo"><% out.println(extraInfo); %></p>
-		</div>
 	</div>
 </body>
 </html>

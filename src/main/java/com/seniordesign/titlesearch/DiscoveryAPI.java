@@ -7,8 +7,10 @@ import com.ibm.watson.developer_cloud.discovery.v1.model.AddDocumentOptions;
 import com.ibm.watson.developer_cloud.discovery.v1.model.Collection;
 import com.ibm.watson.developer_cloud.discovery.v1.model.DeleteDocumentOptions;
 import com.ibm.watson.developer_cloud.discovery.v1.model.DocumentAccepted;
+import com.ibm.watson.developer_cloud.discovery.v1.model.DocumentStatus;
 import com.ibm.watson.developer_cloud.discovery.v1.model.Environment;
 import com.ibm.watson.developer_cloud.discovery.v1.model.Field;
+import com.ibm.watson.developer_cloud.discovery.v1.model.GetDocumentStatusOptions;
 import com.ibm.watson.developer_cloud.discovery.v1.model.ListCollectionFieldsResponse;
 import com.ibm.watson.developer_cloud.discovery.v1.model.ListCollectionsOptions;
 import com.ibm.watson.developer_cloud.discovery.v1.model.ListCollectionsResponse;
@@ -21,10 +23,10 @@ import com.ibm.watson.developer_cloud.service.security.IamOptions;
 
 public class DiscoveryAPI {
 	
-	private static final String WARRANTY_DEEDS_COLLECTION = System.getenv("DISCOVERY_COLLECTION");
-	private static final String VERSION = System.getenv("DISCOVERY_VERSION");
-	private static final String URL = System.getenv("DISCOVERY_ENDPOINT");
-	private static final String API_KEY = System.getenv("DISCOVERY_APIKEY");
+	private static final String WARRANTY_DEEDS_COLLECTION = "TSearchCollection";
+	private static final String VERSION = "2018-12-03";
+	private static final String URL = "https://gateway.watsonplatform.net/discovery/api";
+	private static final String API_KEY = "IV99iX2TX6JfiM3c99MSlaNjvHzH5FXiQE3Gh1qHF-AX";
 	private static Discovery discovery = null;
 	private String environmentId = "";
 	private String collectionId = "";
@@ -86,6 +88,14 @@ public class DiscoveryAPI {
 			document = discovery.addDocument(options).execute();
 		}
 		return document;
+	}
+	
+	public DocumentStatus getDocumentStatus(GetDocumentStatusOptions.Builder builder) {
+		builder.collectionId(collectionId);
+		builder.environmentId(environmentId);
+		GetDocumentStatusOptions options = builder.build();
+		DocumentStatus status = discovery.getDocumentStatus(options).execute();
+		return status;
 	}
 	
 	public List<Field> listFields() {
