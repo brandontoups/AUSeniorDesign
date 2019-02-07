@@ -1,2 +1,0 @@
-# AUSeniorDesign
-Private Repo
