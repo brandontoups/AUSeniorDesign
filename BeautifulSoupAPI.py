@@ -12,11 +12,15 @@ website = "https://www.titlesearcher.com/"
 def locateImageURL(deedType, soupObject, imageFormat, imageDir):
     urlBody = ''
     urlTotal = ''
-    imageCounter = 0
+    imgName = ''
 
     for link in soupObject.find_all('br'):
         for link2 in link.find_all('td'):
             if (link2.text.strip() == deedType):
+                #Grab the previous td tag
+                imgDetails = link2.find_previous_sibling('td')
+                imgName = imgDetails.find_all('span')
+                imgName = imgName[1].text.strip()
                 aTag = link2.findNext('a')
                 while (aTag.has_attr('onclick') != True):
                     link2 = aTag
@@ -30,8 +34,7 @@ def locateImageURL(deedType, soupObject, imageFormat, imageDir):
                         urlTotal += '&imgtype=tiff'
                     elif (imageFormat.upper() == 'PDF'):
                         urlTotal += '&imgtype=pdf'
-                    urllib.urlretrieve(urlTotal, imageDir + '/image_' + str(imageCounter))
-                    imageCounter += 1
+                    urllib.urlretrieve(urlTotal, imageDir + '/' + imgName)
 
 def navigateToSearchPage(username, password, bookNumber, pageNumber, county, s):
     homePage = s.post(website, data={
@@ -101,8 +104,11 @@ def GetTrustDeedByName(username, password, firstName, lastName, county, imageDir
 def GetWarrantyDeedByName(username, password, firstName, lastName, countyName, imageDir, imageFormat):
     pass
 
+def GetDetails():
+    pass
+
 # Example usage of GetWarrantyDeed function. The image type "tiff" or "pdf" must
 # be specified as the last parameter. This function call assumes that the user has
 # created a local directory called 'imageDirectory'.
 
-GetTrustDeed('auburnTigers', 'AuburnUniv', '18', '18', 'Humphreys', 'imageDirectory', 'tiff')
+GetWarrantyDeed('auburnTigers', 'AuburnUniv', '18', '21', 'Humphreys', 'imageDirectory', 'tiff')
