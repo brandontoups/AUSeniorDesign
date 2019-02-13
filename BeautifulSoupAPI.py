@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup
 
 #TODO: Login automatically using SafariBooksOnline resource
 #TODO: Searching by name
-#TODO: Extract metadata from post-1993 records that can be used instead of AI-extracted data
 
 website = "https://www.titlesearcher.com/"
 
@@ -134,14 +133,14 @@ def GetWarrantyDeed(username, password, bookNumber, pageNumber, county, imageDir
         p = navigateToSearchPage(username, password, bookNumber, pageNumber, county, s)
         soup = BeautifulSoup(p.text, 'html.parser')
         locateImageURL('WD', soup, imageFormat, imageDir)
-        locateDetails('WD', soup, s)
+        #locateDetails('WD', soup, s)
 
 def GetTrustDeed(username, password, bookNumber, pageNumber, county, imageDir, imageFormat):
     with requests.Session() as s:
         p = navigateToSearchPage(username, password, bookNumber, pageNumber, county, s)
         soup = BeautifulSoup(p.text, 'html.parser')
         locateImageURL('TD', soup, imageFormat, imageDir)
-        locateDetails('TD', soup, s)
+        #locateDetails('TD', soup, s)
 
 def GetTrustDeedByName(username, password, firstName, lastName, county, imageDir, imageFormat):
     pass
@@ -153,4 +152,4 @@ def GetWarrantyDeedByName(username, password, firstName, lastName, countyName, i
 # be specified as the last parameter. This function call assumes that the user has
 # created a local directory called 'imageDirectory'.
 
-GetWarrantyDeed('auburnTigers', 'AuburnUniv', '18', '21', 'Humphreys', 'imageDirectory', 'tiff')
+GetTrustDeed('auburnTigers', 'AuburnUniv', '18', '18', 'Humphreys', 'imageDirectory', 'tiff')
