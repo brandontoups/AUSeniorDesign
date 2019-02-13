@@ -17,7 +17,6 @@ def locateImageURL(deedType, soupObject, imageFormat, imageDir):
     for link in soupObject.find_all('br'):
         for link2 in link.find_all('td'):
             if (link2.text.strip() == deedType):
-                #Grab the previous td tag
                 imgDetails = link2.find_previous_sibling('td')
                 imgName = imgDetails.find_all('span')
                 imgName = imgName[1].text.strip()
@@ -35,6 +34,50 @@ def locateImageURL(deedType, soupObject, imageFormat, imageDir):
                     elif (imageFormat.upper() == 'PDF'):
                         urlTotal += '&imgtype=pdf'
                     urllib.urlretrieve(urlTotal, imageDir + '/' + imgName)
+
+def locateDetails(deedType, soupObject, s):
+    for link in soupObject.find_all('br'):
+        for link2 in link.find_all('td'):
+            if (link2.text.strip() == deedType):
+                propertyInfo = {}
+                link2 = link2.find_previous_sibling('td')
+                details = link2.find_previous_sibling('td')
+                details2 = details.findNext('a')
+                if (details2.text.strip() == 'Details'):
+                    detailsLink = details2['href']
+                    listCounter = 0
+                    p = s.get(website + str(detailsLink))
+                    soup = BeautifulSoup(p.text, 'html.parser')
+                    for link3 in soup.find_all('td'):
+                        if (link3.text.strip()[0:9] == 'File Date'):
+                            propertyInfo['date'] = link3.text.strip().split(':')[1]
+                            #print(propertyInfo['date'])
+                            listCounter += 1
+                            while (listCounter <= 8):
+                                link3 = link3.findNext('td')
+                                if (listCounter == 2):
+                                    propertyInfo['tax'] = link3.text.strip().split('$')[1]
+                                    #print(propertyInfo['tax'])
+                                if (listCounter == 3):
+                                    propertyInfo['transaction'] = link3.text.strip().split('$')[1]
+                                    #print(propertyInfo['transaction'])
+                                if (listCounter == 6):
+                                    propertyInfo['lien'] = link3.text.strip().split('$')[1]
+                                    #print(propertyInfo['lien'])
+                                if (listCounter == 7):
+                                    propertyInfo['mort'] = link3.text.strip().split('$')[1]
+                                    #print(propertyInfo['mort'])
+                                listCounter += 1
+                        if (link3.text.strip() == 'Grantor(s)'):
+                            link3 = link3.findNext('td')
+                            link3 = link3.findNext('td')
+                            link3 = link3.findNext('td')
+                            propertyInfo['grantors'] = link3.text.strip()
+                            #print(propertyInfo['grantors'])
+                            link3 = link3.findNext('td')
+                            propertyInfo['grantees'] = link3.text.strip()
+                            #print(propertyInfo['grantees'])
+                            break
 
 def navigateToSearchPage(username, password, bookNumber, pageNumber, county, s):
     homePage = s.post(website, data={
@@ -91,20 +134,19 @@ def GetWarrantyDeed(username, password, bookNumber, pageNumber, county, imageDir
         p = navigateToSearchPage(username, password, bookNumber, pageNumber, county, s)
         soup = BeautifulSoup(p.text, 'html.parser')
         locateImageURL('WD', soup, imageFormat, imageDir)
+        locateDetails('WD', soup, s)
 
 def GetTrustDeed(username, password, bookNumber, pageNumber, county, imageDir, imageFormat):
     with requests.Session() as s:
         p = navigateToSearchPage(username, password, bookNumber, pageNumber, county, s)
         soup = BeautifulSoup(p.text, 'html.parser')
         locateImageURL('TD', soup, imageFormat, imageDir)
+        locateDetails('TD', soup, s)
 
 def GetTrustDeedByName(username, password, firstName, lastName, county, imageDir, imageFormat):
     pass
 
 def GetWarrantyDeedByName(username, password, firstName, lastName, countyName, imageDir, imageFormat):
-    pass
-
-def GetDetails():
     pass
 
 # Example usage of GetWarrantyDeed function. The image type "tiff" or "pdf" must
