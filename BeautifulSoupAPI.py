@@ -1,10 +1,18 @@
 import requests
 import urllib
+import sys
 from selenium import webdriver
 from bs4 import BeautifulSoup
 
-#TODO: Login automatically using SafariBooksOnline resource
-#TODO: Searching by name
+
+# Example file call: python BeautifulSoupAPI.py [deedType] [bookNum] [pageNum] [county] [imageDir] [imageType]
+#                    python BeautifulSoupAPI.py w 18 41 humphreys imageDir tiff
+# deedType: 'w' for warranty deed or 't' for trust deed
+# bookNum: warranty or trust deed book number
+# pageNum: warranty or trust deed page number
+# county: name of county in which to search for deed(s)
+# imageDir: directory where images are saved
+# imageType: 'tiff' or 'pdf'
 
 website = "https://www.titlesearcher.com/"
 
@@ -128,19 +136,19 @@ def navigateToSearchPage(username, password, bookNumber, pageNumber, county, s):
     })
     return p
 
-def GetWarrantyDeed(username, password, bookNumber, pageNumber, county, imageDir, imageFormat):
-    with requests.Session() as s:
-        p = navigateToSearchPage(username, password, bookNumber, pageNumber, county, s)
-        soup = BeautifulSoup(p.text, 'html.parser')
-        locateImageURL('WD', soup, imageFormat, imageDir)
-        #locateDetails('WD', soup, s)
+def GetWarrantyDeed(imageDir, imageFormat, p):
+    #with requests.Session() as s:
+        #p = navigateToSearchPage(username, password, bookNumber, pageNumber, county, s)
+    soup = BeautifulSoup(p.text, 'html.parser')
+    locateImageURL('WD', soup, imageFormat, imageDir)
+    #locateDetails('WD', soup, s)
 
-def GetTrustDeed(username, password, bookNumber, pageNumber, county, imageDir, imageFormat):
-    with requests.Session() as s:
-        p = navigateToSearchPage(username, password, bookNumber, pageNumber, county, s)
-        soup = BeautifulSoup(p.text, 'html.parser')
-        locateImageURL('TD', soup, imageFormat, imageDir)
-        #locateDetails('TD', soup, s)
+def GetTrustDeed(imageDir, imageFormat, p):
+    #with requests.Session() as s:
+        #p = navigateToSearchPage(username, password, bookNumber, pageNumber, county, s)
+    soup = BeautifulSoup(p.text, 'html.parser')
+    locateImageURL('TD', soup, imageFormat, imageDir)
+    #locateDetails('TD', soup, s)
 
 def GetTrustDeedByName(username, password, firstName, lastName, county, imageDir, imageFormat):
     pass
@@ -148,8 +156,30 @@ def GetTrustDeedByName(username, password, firstName, lastName, county, imageDir
 def GetWarrantyDeedByName(username, password, firstName, lastName, countyName, imageDir, imageFormat):
     pass
 
-# Example usage of GetWarrantyDeed function. The image type "tiff" or "pdf" must
-# be specified as the last parameter. This function call assumes that the user has
-# created a local directory called 'imageDirectory'.
+def main():
+    deedType = sys.argv[1]
+    bookNum = sys.argv[2]
+    pageNum = sys.argv[3]
+    county = sys.argv[4]
+    imageDir = sys.argv[5]
+    imageFormat = sys.argv[6]
 
-GetTrustDeed('auburnTigers', 'AuburnUniv', '18', '18', 'Humphreys', 'imageDirectory', 'tiff')
+    with requests.Session() as s:
+        while (1):
+            # TODO: Change when searching by name
+            p = navigateToSearchPage('auburnTigers', 'AuburnUniv', bookNum, pageNum, county, s)
+            if (deedType == 't'):
+                GetTrustDeed(imageDir, imageFormat, p)
+            elif (deedType == 'w'):
+                GetWarrantyDeed(imageDir, imageFormat, p)
+            deedArguments = raw_input("Enter the deed arguments with spaces in between each argument. ")
+            deedArguments = deedArguments.split(" ")
+            deedType = deedArguments[0]
+            bookNum = deedArguments[1]
+            pageNum = deedArguments[2]
+            county = deedArguments[3]
+            imageDir = deedArguments[4]
+            imageFormat = deedArguments[5]
+
+if __name__ == "__main__":
+    main()
