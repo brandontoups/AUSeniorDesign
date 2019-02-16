@@ -14,12 +14,26 @@ import com.box.sdk.DeveloperEditionEntityType;
 import com.box.sdk.IAccessTokenCache;
 import com.box.sdk.InMemoryLRUAccessTokenCache;
 
+enum Folder {
+	WARRANTYPDF, WARRANTYTEXT;
+}
+
 public class BoxAPI {
 	private static BoxDeveloperEditionAPIConnection client = null;
-	private final String folderId = "64984958567";
+	private String folderId = "64984958567";
 	private final String userId = "7110130040";
 	
-	public BoxAPI() {
+	public BoxAPI(Folder folder) {
+		switch(folder) {
+			case WARRANTYPDF:
+				folderId = "64984671696";
+				break;
+			case WARRANTYTEXT:
+				folderId = "64984958567";
+				break;
+			default:
+				break;
+		}
 		Reader reader = null;
 		BoxConfig boxConfig = null;
 		try {
@@ -46,7 +60,6 @@ public class BoxAPI {
 		try {
 			BoxFile.Info newFileInfo = folder.uploadFile(stream, fileName);
 			System.out.println(newFileInfo.getID());
-			stream.close();
 		} catch (BoxAPIResponseException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -39,7 +39,7 @@ public class QueryResult extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String query = request.getParameter("query");
 		QueryOptions.Builder builder = new QueryOptions.Builder();
-		builder.filter(query);
+		builder.naturalLanguageQuery(query);
 		DiscoveryAPI api = new DiscoveryAPI();
 		QueryResponse queryResponse = api.runQuery(builder);
 		request.setAttribute("queryResponse", queryResponse);
