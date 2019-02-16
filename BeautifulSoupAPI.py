@@ -173,6 +173,7 @@ def main():
             elif (deedType == 'w'):
                 GetWarrantyDeed(imageDir, imageFormat, p)
             deedArguments = raw_input("Enter the deed arguments with spaces in between each argument. ")
+            # Example input: t 18 18 humphreys imageDir pdf
             deedArguments = deedArguments.split(" ")
             deedType = deedArguments[0]
             bookNum = deedArguments[1]
