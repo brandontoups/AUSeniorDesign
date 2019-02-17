@@ -24,12 +24,13 @@ public class BoxAPI {
 	private final String userId = System.getenv("BOX_USERID");
 	
 	public BoxAPI(Folder folder) {
+		ConfigProperties properties = new ConfigProperties();
 		switch(folder) {
 			case WARRANTYPDF:
-				folderId = System.getenv("BOX_WDPDF");
+				folderId = properties.getProperty("BOX_FOLDER_WDPDF");
 				break;
 			case WARRANTYTEXT:
-				folderId = System.getenv("BOX_WDTXT");
+				folderId = properties.getProperty("BOX_FOLDER_WDTXT");
 				break;
 			default:
 				break;

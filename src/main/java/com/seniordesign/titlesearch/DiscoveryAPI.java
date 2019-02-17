@@ -1,6 +1,11 @@
 package com.seniordesign.titlesearch;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.List;
+import java.util.Properties;
 
 import com.ibm.watson.developer_cloud.discovery.v1.Discovery;
 import com.ibm.watson.developer_cloud.discovery.v1.model.AddDocumentOptions;
@@ -22,17 +27,20 @@ import com.ibm.watson.developer_cloud.discovery.v1.model.QueryResponse;
 import com.ibm.watson.developer_cloud.service.security.IamOptions;
 
 public class DiscoveryAPI {
-	
-	private static final String WARRANTY_DEEDS_COLLECTION = System.getenv("DISCOVERY_COLLECTION");
-	private static final String VERSION = System.getenv("DISCOVERY_VERSION");
-	private static final String URL = System.getenv("DISCOVERY_ENDPOINT");
-	private static final String API_KEY = System.getenv("DISCOVERY_APIKEY");
+	private String WARRANTY_DEEDS_COLLECTION;
+	private String VERSION;
+	private String URL;
+	private String API_KEY;
 	private static Discovery discovery = null;
 	private String environmentId = "";
 	private String collectionId = "";
 	
 	public DiscoveryAPI() {
-		super();
+		ConfigProperties properties = new ConfigProperties();
+		WARRANTY_DEEDS_COLLECTION = properties.getProperty("DISCOVERY_COLLECTION");
+		VERSION = properties.getProperty("DISCOVERY_VERSION");
+		URL = properties.getProperty("DISCOVERY_ENDPOINT");
+		API_KEY = properties.getProperty("DISCOVERY_APIKEY");
 		discovery = connectToDiscovery();
 		environmentId = getEnvironmentId();
 		collectionId = getCollectionId();
