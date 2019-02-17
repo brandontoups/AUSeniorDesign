@@ -23,7 +23,11 @@ def locateImageURL(deedType, soupObject, imageFormat, imageDir):
     imgName = ''
 
     for link in soupObject.find_all('br'):
+        print(link)
+        sys.stdout.flush()
         for link2 in link.find_all('td'):
+            print(link2)
+            sys.stdout.flush()
             if (link2.text.strip() == deedType):
                 imgDetails = link2.find_previous_sibling('td')
                 imgName = imgDetails.find_all('span')
@@ -35,14 +39,18 @@ def locateImageURL(deedType, soupObject, imageFormat, imageDir):
                 onclick = aTag.get('onclick')
                 if (onclick[0:4] == 'load'):
                     onclickList = onclick.split("'")
+                    print(onclickList)
+                    sys.stdout.flush()
                     urlBody = onclickList[1]
+                    print(urlBody)
+                    sys.stdout.flush()
                     urlTotal = website + 'imgview.php?' + urlBody
+                    print(urlTotal)
+                    sys.stdout.flush()
                     if (imageFormat.upper() == 'TIFF'):
                         urlTotal += '&imgtype=tiff'
                     elif (imageFormat.upper() == 'PDF'):
                         urlTotal += '&imgtype=pdf'
-                    print(imageDir + os.sep + imgName + '.pdf')
-                    sys.stdout.flush()
                     urllib.urlretrieve(urlTotal, imageDir + os.sep + imgName + '.pdf')
     print("--EOF--")
     sys.stdout.flush()
@@ -144,8 +152,6 @@ def navigateToSearchPage(username, password, bookNumber, pageNumber, county, s):
 def GetWarrantyDeed(imageDir, imageFormat, p):
     #with requests.Session() as s:
         #p = navigateToSearchPage(username, password, bookNumber, pageNumber, county, s)
-    print(imageDir)
-    print(imageFormat)
     soup = BeautifulSoup(p.text, 'html.parser')
     locateImageURL('WD', soup, imageFormat, imageDir)
     #locateDetails('WD', soup, s)

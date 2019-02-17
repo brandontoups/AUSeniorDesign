@@ -23,10 +23,10 @@ import com.ibm.watson.developer_cloud.service.security.IamOptions;
 
 public class DiscoveryAPI {
 	
-	private static final String WARRANTY_DEEDS_COLLECTION = "TSearchCollection";
-	private static final String VERSION = "2018-12-03";
-	private static final String URL = "https://gateway.watsonplatform.net/discovery/api";
-	private static final String API_KEY = "IV99iX2TX6JfiM3c99MSlaNjvHzH5FXiQE3Gh1qHF-AX";
+	private static final String WARRANTY_DEEDS_COLLECTION = System.getenv("DISCOVERY_COLLECTION");
+	private static final String VERSION = System.getenv("DISCOVERY_VERSION");
+	private static final String URL = System.getenv("DISCOVERY_ENDPOINT");
+	private static final String API_KEY = System.getenv("DISCOVERY_APIKEY");
 	private static Discovery discovery = null;
 	private String environmentId = "";
 	private String collectionId = "";

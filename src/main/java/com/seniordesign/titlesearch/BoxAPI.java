@@ -20,16 +20,16 @@ enum Folder {
 
 public class BoxAPI {
 	private static BoxDeveloperEditionAPIConnection client = null;
-	private String folderId = "64984958567";
-	private final String userId = "7110130040";
+	private String folderId = "";
+	private final String userId = System.getenv("BOX_USERID");
 	
 	public BoxAPI(Folder folder) {
 		switch(folder) {
 			case WARRANTYPDF:
-				folderId = "64984671696";
+				folderId = System.getenv("BOX_WDPDF");
 				break;
 			case WARRANTYTEXT:
-				folderId = "64984958567";
+				folderId = System.getenv("BOX_WDTXT");
 				break;
 			default:
 				break;
