@@ -1,186 +1,272 @@
 import requests
 import urllib
 import sys
-from selenium import webdriver
+import os
 from bs4 import BeautifulSoup
-
-
-# Example file call: python BeautifulSoupAPI.py [deedType] [bookNum] [pageNum] [county] [imageDir] [imageType]
-#                    python BeautifulSoupAPI.py w 18 41 humphreys imageDir tiff
-# deedType: 'w' for warranty deed or 't' for trust deed
-# bookNum: warranty or trust deed book number
-# pageNum: warranty or trust deed page number
-# county: name of county in which to search for deed(s)
-# imageDir: directory where images are saved
-# imageType: 'tiff' or 'pdf'
 
 website = "https://www.titlesearcher.com/"
 
-def locateImageURL(deedType, soupObject, imageFormat, imageDir):
-    urlBody = ''
-    urlTotal = ''
-    imgName = ''
+class TitleSearcher:
 
-    for link in soupObject.find_all('br'):
-        for link2 in link.find_all('td'):
-            if (link2.text.strip() == deedType):
-                imgDetails = link2.find_previous_sibling('td')
-                imgName = imgDetails.find_all('span')
-                imgName = imgName[1].text.strip()
-                aTag = link2.findNext('a')
-                while (aTag.has_attr('onclick') != True):
-                    link2 = aTag
-                    aTag = link2.findNext('a')
-                onclick = aTag.get('onclick')
-                if (onclick[0:4] == 'load'):
-                    onclickList = onclick.split("'")
-                    urlBody = onclickList[1]
-                    urlTotal = website + 'imgview.php?' + urlBody
-                    if (imageFormat.upper() == 'TIFF'):
-                        urlTotal += '&imgtype=tiff'
-                    elif (imageFormat.upper() == 'PDF'):
-                        urlTotal += '&imgtype=pdf'
-                    urllib.urlretrieve(urlTotal, imageDir + '/' + imgName)
+    def __init__(self, bookNum, pageNum, state, county, isDataPreExtracted):
+        self.bookNum = bookNum
+        self.pageNum = pageNum
+        self.state = ''
+        self.county = ''
+        if (state == '0'):
+            self.state = 'tennessee'
+        if (county == '0'):
+            self.county = 'humphreys'
+        self.isDataPreExtracted = isDataPreExtracted
 
-def locateDetails(deedType, soupObject, s):
-    for link in soupObject.find_all('br'):
-        for link2 in link.find_all('td'):
-            if (link2.text.strip() == deedType):
-                propertyInfo = {}
-                link2 = link2.find_previous_sibling('td')
-                details = link2.find_previous_sibling('td')
-                details2 = details.findNext('a')
-                if (details2.text.strip() == 'Details'):
-                    detailsLink = details2['href']
-                    listCounter = 0
-                    p = s.get(website + str(detailsLink))
-                    soup = BeautifulSoup(p.text, 'html.parser')
-                    for link3 in soup.find_all('td'):
-                        if (link3.text.strip()[0:9] == 'File Date'):
-                            propertyInfo['date'] = link3.text.strip().split(':')[1]
-                            #print(propertyInfo['date'])
-                            listCounter += 1
-                            while (listCounter <= 8):
-                                link3 = link3.findNext('td')
-                                if (listCounter == 2):
-                                    propertyInfo['tax'] = link3.text.strip().split('$')[1]
-                                    #print(propertyInfo['tax'])
-                                if (listCounter == 3):
-                                    propertyInfo['transaction'] = link3.text.strip().split('$')[1]
-                                    #print(propertyInfo['transaction'])
-                                if (listCounter == 6):
-                                    propertyInfo['lien'] = link3.text.strip().split('$')[1]
-                                    #print(propertyInfo['lien'])
-                                if (listCounter == 7):
-                                    propertyInfo['mort'] = link3.text.strip().split('$')[1]
-                                    #print(propertyInfo['mort'])
-                                listCounter += 1
-                        if (link3.text.strip() == 'Grantor(s)'):
-                            link3 = link3.findNext('td')
-                            link3 = link3.findNext('td')
-                            link3 = link3.findNext('td')
-                            propertyInfo['grantors'] = link3.text.strip()
-                            #print(propertyInfo['grantors'])
-                            link3 = link3.findNext('td')
-                            propertyInfo['grantees'] = link3.text.strip()
-                            #print(propertyInfo['grantees'])
+    def searchByBookPageNum(self, soupObject, s):
+        for a in soupObject.find_all('a'):
+            for font in a.find_all('font'):
+                if (font.text.strip() == 'Search By Book And Page / File #'):
+                    bookSearch = a['href']
+                    break
+
+        p = s.post(website + str(bookSearch), data={
+            "book": self.bookNum,
+            "page": self.pageNum,
+            "executeSearch": "Execute Search"
+        })
+        return p
+
+    def searchNonIndexedDocs(self, soupObject, s):
+        for a in soupObject.find_all('a'):
+            for font in a.find_all('font'):
+                if (font.text.strip() == 'View Non-Indexed Documents'):
+                    bookSearch = a['href']
+                    break
+
+        p = s.post(website + str(bookSearch), data={
+            "dir": "1" #1 corresponds to warranty deeds
+        })
+        soup = BeautifulSoup(p.text, 'html.parser')
+        bookNum = 'none'
+
+        #Iterate through book options and see if book number is listed
+        for td in soup.find_all('td'):
+            for select in td.find_all('select'):
+                if (select['name'] == 'book'):
+                    for option in select.find_all('option'):
+                        #Strip whitespace, leading zeros, and leading 'wd'
+                        if (option.text.strip().lstrip('0').lstrip('wd') == self.bookNum):
+                            bookNum = option['value']
                             break
 
-def navigateToSearchPage(username, password, bookNumber, pageNumber, county, s):
-    homePage = s.post(website, data={
-        "userName": username,
-        "password": password,
-        "loginb": "Go"
-    })
-    soup = BeautifulSoup(homePage.text, 'html.parser')
-    county = county.upper()
-    countySearch = ''
+        if (bookNum == 'none'):
+            print("Book not found in Non-Indexed Documents.")
+        else:
+            p = s.post(website + str(bookSearch) + '?dir=1', data={
+                "book": bookNum
+            })
+            soup = BeautifulSoup(p.text, 'html.parser')
+            pageNum = 'none'
 
-    for link in soup.find_all('a'):
-        if (link.text.strip() == 'New Search'):
-            countySearch = link['href']
-            break
+            for td in soup.find_all('td'):
+                for select in td.find_all('select'):
+                    if (select['name'] == 'page'):
+                        for option in select.find_all('option'):
+                            #Strip whitespace, leading zeros, any numbers after decimal point
+                            if (int(float(option.text.strip().lstrip('0'))) == int(self.pageNum)):
+                                pageNum = option['value']
+                                break
 
-    p = s.get(str(countySearch))
-    soup = BeautifulSoup(p.text, 'html.parser')
-    countyPage = ''
+                        if (pageNum == 'none'):
+                            print("Page not found in Book.")
+                        else:
+                            p = s.post(website + str(bookSearch) + '?dir=1&book='
+                                       + bookNum, data={
+                                "page": pageNum })
+                            soup = BeautifulSoup(p.text, 'html.parser')
 
-    for link in soup.find_all('a'):
-        if (link.text.strip() == county):
-            countyPage = link['href']
-            break
+                            #Parse max and min
+                            for td_2 in soup.find_all('td'):
+                                for input in td_2.find_all('input'):
+                                    if (input.has_attr('name') == True):
+                                        if (input['name'] == 'max'):
+                                            max = input['value']
+                                            min = input.findNext('input')
+                                            min = min['value']
+                                            break
 
-    p = s.get(website + str(countyPage))
-    soup = BeautifulSoup(p.text, 'html.parser')
-    search = ''
+                            p = s.get(website + 'ziframe.php?site=deedholdImage&dir=1&book=' +
+                                      bookNum + '&page=' + pageNum + '&max=' + max + '&min=' +
+                                      min + '&schema=&previoussite=deedhold.php')
+                            return p
 
-    for link in soup.find_all('a'):
-        if (link.text.strip() == 'SEARCH ' + county):
-            search = link['href']
-            break
+    def locateImageURL(self, deedType, soupObject, imageFormat, imageDir, s):
+        if (self.isDataPreExtracted == '0'):
+            for br in soupObject.find_all('br'):
+                for td in br.find_all('td'):
+                    if (td.text.strip() == deedType):
+                        imgDetails = td.find_previous_sibling('td')
+                        imgName = imgDetails.find_all('span')
+                        imgName = imgName[1].text.strip()
+                        aTag = td.findNext('a')
 
-    p = s.get(website + str(search))
-    soup = BeautifulSoup(p.text, 'html.parser')
-    bookSearch = ''
+                        while (aTag.has_attr('onclick') != True):
+                            td = aTag
+                            aTag = td.findNext('a')
 
-    for link in soup.find_all('a'):
-        for link2 in link.find_all('font'):
-            if (link2.text.strip() == 'Search By Book And Page / File #'):
-                bookSearch = link['href']
+                        onclick = aTag.get('onclick')
+                        if (onclick[0:4] == 'load'):
+                            onclickList = onclick.split("'")
+                            urlBody = onclickList[1]
+                            urlTotal = website + 'imgview.php?' + urlBody
+                            if (imageFormat.upper() == 'TIFF'):
+                                urlTotal += '&imgtype=tiff'
+                            elif (imageFormat.upper() == 'PDF'):
+                                urlTotal += '&imgtype=pdf'
+                            urllib.urlretrieve(urlTotal, imageDir + os.sep + imgName + '.pdf')
+
+        elif (self.isDataPreExtracted == '1'):
+            for td in soupObject.find_all('td'):
+                for iframe in td.find_all('iframe'):
+                    newWindow = iframe['src']
+                    break
+
+            urlTotal = website + newWindow
+            p = s.get(urlTotal)
+            soup = BeautifulSoup(p.text, 'html.parser')
+
+            for frame in soup.find_all('frame'):
+                urlBody = frame['src']
+                with open(imageDir + '/' + deedType + self.bookNum + '-' +  self.pageNum, 'wb') as handle:
+                    response = s.get(website + urlBody, stream=True)
+                    if not response.ok:
+                        print response
+                    for block in response.iter_content(1024):
+                        if not block:
+                            break
+                        handle.write(block)
                 break
 
-    p = s.post(website + str(bookSearch), data={
-        "book": bookNumber,
-        "page": pageNumber,
-        "executeSearch": "Execute Search"
-    })
-    return p
+    def locateDetails(deedType, soupObject, s): #TODO: Modify to include cross references
+        for br in soupObject.find_all('br'):
+            for td in br.find_all('td'):
+                if (td.text.strip() == deedType):
+                    propInfo = []
+                    td = td.find_previous_sibling('td')
+                    details = td.find_previous_sibling('td')
+                    details = details.findNext('a')
+                    if (details.text.strip() == 'Details'):
+                        detailsLink = details['href']
+                        propInfoCounter = 0
+                        p = s.get(website + str(detailsLink))
+                        soup = BeautifulSoup(p.text, 'html.parser')
 
-def GetWarrantyDeed(imageDir, imageFormat, p):
-    #with requests.Session() as s:
-        #p = navigateToSearchPage(username, password, bookNumber, pageNumber, county, s)
-    soup = BeautifulSoup(p.text, 'html.parser')
-    locateImageURL('WD', soup, imageFormat, imageDir)
-    #locateDetails('WD', soup, s)
+                        for td_2 in soup.find_all('td'):
+                            if (td_2.text.strip()[0:9] == 'File Date'):
+                                propInfo['date'] = td_2.text.strip().split(':')[1]
+                                #print(propInfo['date'])
+                                propInfoCounter += 1
 
-def GetTrustDeed(imageDir, imageFormat, p):
-    #with requests.Session() as s:
-        #p = navigateToSearchPage(username, password, bookNumber, pageNumber, county, s)
-    soup = BeautifulSoup(p.text, 'html.parser')
-    locateImageURL('TD', soup, imageFormat, imageDir)
-    #locateDetails('TD', soup, s)
+                                while (propInfoCounter <= 8):
+                                    td_2 = td_2.findNext('td')
+                                    if (propInfoCounter == 2):
+                                        propInfo['tax'] = td_2.text.strip().split('$')[1]
+                                        #print(propInfo['tax'])
+                                    if (propInfoCounter == 3):
+                                        propInfo['transaction'] = td_2.text.strip().split('$')[1]
+                                        #print(propInfo['transaction'])
+                                    if (propInfoCounter == 6):
+                                        propInfo['lien'] = td_2.text.strip().split('$')[1]
+                                        #print(propInfo['lien'])
+                                    if (propInfoCounter == 7):
+                                        propInfo['mort'] = td_2.text.strip().split('$')[1]
+                                        #print(propInfo['mort'])
+                                    propInfoCounter += 1
 
-def GetTrustDeedByName(username, password, firstName, lastName, county, imageDir, imageFormat):
-    pass
+                            if (td_2.text.strip() == 'Grantor(s)'):
+                                td_2 = td_2.findNext('td')
+                                td_2 = td_2.findNext('td')
+                                td_2 = td_2.findNext('td')
+                                propInfo['grantors'] = td_2.text.strip()
+                                #print(propInfo['grantors'])
+                                td_2 = td_2.findNext('td')
+                                propInfo['grantees'] = td_2.text.strip()
+                                #print(propInfo['grantees'])
+                                break
 
-def GetWarrantyDeedByName(username, password, firstName, lastName, countyName, imageDir, imageFormat):
-    pass
+    def navigateToSearchPage(self, username, password, s):
+        homePage = s.post(website, data={
+            "userName": username,
+            "password": password,
+            "loginb": "Go"
+        })
+        soup = BeautifulSoup(homePage.text, 'html.parser')
+        county = self.county.upper()
+        countySearch = ''
+
+        for a in soup.find_all('a'):
+            if (a.text.strip() == 'New Search'):
+                countySearch = a['href']
+                break
+
+        p = s.get(str(countySearch))
+        soup = BeautifulSoup(p.text, 'html.parser')
+        countyPage = ''
+
+        for a in soup.find_all('a'):
+            if (a.text.strip() == county):
+                countyPage = a['href']
+                break
+
+        p = s.get(website + str(countyPage))
+        soup = BeautifulSoup(p.text, 'html.parser')
+        search = ''
+
+        for a in soup.find_all('a'):
+            if (a.text.strip() == 'SEARCH ' + county):
+                search = a['href']
+                break
+
+        p = s.get(website + str(search))
+        soup = BeautifulSoup(p.text, 'html.parser')
+        bookSearch = ''
+        if (self.isDataPreExtracted == '0'):
+            p = self.searchByBookPageNum(soup, s)
+        elif (self.isDataPreExtracted == '1'):
+            p = self.searchNonIndexedDocs(soup, s)
+        return p
+
+    def GetWarrantyDeed(self, imageDir, imageFormat, p, s):
+        soup = BeautifulSoup(p.text, 'html.parser')
+        self.locateImageURL('WD', soup, imageFormat, imageDir, s)
+
+    def GetTrustDeed(self, imageDir, imageFormat, p, s):
+        soup = BeautifulSoup(p.text, 'html.parser')
+        self.locateImageURL('TD', soup, imageFormat, imageDir, s)
+
+    def GetTrustDeedByName():
+        pass
+
+    def GetWarrantyDeedByName():
+        pass
 
 def main():
-    deedType = sys.argv[1]
-    bookNum = sys.argv[2]
-    pageNum = sys.argv[3]
-    county = sys.argv[4]
-    imageDir = sys.argv[5]
-    imageFormat = sys.argv[6]
-
     with requests.Session() as s:
         while (1):
-            # TODO: Change when searching by name
-            p = navigateToSearchPage('auburnTigers', 'AuburnUniv', bookNum, pageNum, county, s)
-            if (deedType == 't'):
-                GetTrustDeed(imageDir, imageFormat, p)
-            elif (deedType == 'w'):
-                GetWarrantyDeed(imageDir, imageFormat, p)
+            # Example Input: t 18 18 0 0 imageDir pdf 0
             deedArguments = raw_input("Enter the deed arguments with spaces in between each argument. ")
-            # Example input: t 18 18 humphreys imageDir pdf
             deedArguments = deedArguments.split(" ")
             deedType = deedArguments[0]
             bookNum = deedArguments[1]
             pageNum = deedArguments[2]
-            county = deedArguments[3]
-            imageDir = deedArguments[4]
-            imageFormat = deedArguments[5]
+            state = deedArguments[3]
+            county = deedArguments[4]
+            imageDir = deedArguments[5]
+            imageFormat = deedArguments[6]
+            isDataPreExtracted = deedArguments[7]
+            TitleSearch = TitleSearcher(bookNum, pageNum, state, county, isDataPreExtracted)
+            p = TitleSearch.navigateToSearchPage('auburnTigers', 'AuburnUniv', s)
+            if (deedType == 't'):
+                    TitleSearch.GetTrustDeed(imageDir, imageFormat, p, s)
+            elif (deedType == 'w'):
+                TitleSearch.GetWarrantyDeed(imageDir, imageFormat, p, s)
 
 if __name__ == "__main__":
     main()
