@@ -21,7 +21,7 @@ enum Folder {
 public class BoxAPI {
 	private static BoxDeveloperEditionAPIConnection client = null;
 	private String folderId = "";
-	private final String userId = System.getenv("BOX_USERID");
+	private final String userId;
 	
 	public BoxAPI(Folder folder) {
 		ConfigProperties properties = new ConfigProperties();
@@ -35,6 +35,7 @@ public class BoxAPI {
 			default:
 				break;
 		}
+		userId = properties.getProperty("BOX_USERID");
 		Reader reader = null;
 		BoxConfig boxConfig = null;
 		try {

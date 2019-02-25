@@ -35,6 +35,14 @@ public class GetWarrantyDeed extends HttpServlet {
 		response.getWriter().append("Served at: ").append(request.getContextPath());
 		String bookNo = request.getParameter("book");
 		String pageNo = request.getParameter("page");
+		try {
+			int intBookNo = Integer.parseInt(bookNo);
+			int intPageNo = Integer.parseInt(pageNo);
+		} catch (NumberFormatException e) {
+			request.setAttribute("statusDesc", "Please enter a valid number.");
+			request.setAttribute("statusCode", "400");
+			request.getRequestDispatcher("/viewWarrantyDeed.jsp").forward(request, response);
+		}
 		String county = "Humphreys";
 		System.out.println(this.getServletContext().getContextPath());
 		
@@ -51,10 +59,15 @@ public class GetWarrantyDeed extends HttpServlet {
 			TitleSearcherAPI api = TitleSearcherAPI.getInstance();
 			fileContent = api.getPDFWarrantyDeed(bookNo, pageNo, county);
 			fileName = "WD" + bookNo + "-" + pageNo + ".pdf";
+			if(fileContent == null) {
+				request.setAttribute("status", "File could not be downloaded from the website.");
+				request.setAttribute("errorCode", "503");
+				request.getRequestDispatcher("/viewWarrantyDeed.jsp").forward(request, response);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			request.setAttribute("status", "File could not be downloaded from the website.");
-			request.getRequestDispatcher("ocr.jsp").forward(request, response);
+			request.getRequestDispatcher("/viewWarrantyDeed.jsp").forward(request, response);
 		}
 		
 		
@@ -71,12 +84,16 @@ public class GetWarrantyDeed extends HttpServlet {
 				if(pdfFileToUpload.exists()) {					
 					boxAPI.uploadFile(inputStream, fileName);
 					inputStream.close();
+					if(pdfFileToUpload.delete()) {
+						System.out.println("File deleted: " + fileName);
+					}
 				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-				request.setAttribute("status", "File could not be downloaded from the website.");
-				request.getRequestDispatcher("ocr.jsp").forward(request, response);
+				request.setAttribute("statusDesc", "File could not be downloaded from the website.");
+				request.setAttribute("statusCode", "503");
+				request.getRequestDispatcher("/viewWarrantyDeed.jsp").forward(request, response);
 			}
 			
 			// Pass the inputstream to the UploadFile Servlet to handle the upload to discovery and the .txt file to Box.
@@ -84,6 +101,9 @@ public class GetWarrantyDeed extends HttpServlet {
 			request.setAttribute("fileName", fileName);
 			request.setAttribute("fileContentType", "APPLICATION_PDF");
 			request.getRequestDispatcher("/UploadFile").include(request, response);
+			request.setAttribute("statusDesc", "File downloaded successfully.");
+			request.setAttribute("statusCode", "200");
+			request.getRequestDispatcher("/viewWarrantyDeed.jsp").forward(request, response);
 		}
 	}
 

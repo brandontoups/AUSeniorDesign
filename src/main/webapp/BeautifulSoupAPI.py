@@ -1,6 +1,7 @@
+import sys
+sys.path.insert(0, "/home/vcap/app/wlp/usr/servers/defaultServer/apps/myapp.war/WEB-INF/lib/site-packages")
 import requests
 import urllib
-import sys
 from selenium import webdriver
 from bs4 import BeautifulSoup
 import os
@@ -23,11 +24,7 @@ def locateImageURL(deedType, soupObject, imageFormat, imageDir):
     imgName = ''
 
     for link in soupObject.find_all('br'):
-        print(link)
-        sys.stdout.flush()
         for link2 in link.find_all('td'):
-            print(link2)
-            sys.stdout.flush()
             if (link2.text.strip() == deedType):
                 imgDetails = link2.find_previous_sibling('td')
                 imgName = imgDetails.find_all('span')
@@ -39,14 +36,8 @@ def locateImageURL(deedType, soupObject, imageFormat, imageDir):
                 onclick = aTag.get('onclick')
                 if (onclick[0:4] == 'load'):
                     onclickList = onclick.split("'")
-                    print(onclickList)
-                    sys.stdout.flush()
                     urlBody = onclickList[1]
-                    print(urlBody)
-                    sys.stdout.flush()
                     urlTotal = website + 'imgview.php?' + urlBody
-                    print(urlTotal)
-                    sys.stdout.flush()
                     if (imageFormat.upper() == 'TIFF'):
                         urlTotal += '&imgtype=tiff'
                     elif (imageFormat.upper() == 'PDF'):
@@ -188,6 +179,8 @@ def main():
             county = deedArguments[3]
             imageDir = deedArguments[4]
             imageFormat = deedArguments[5]
+            print("DO NOT REMOVE. THIS LINE HELPS --EOF-- BECOME A NEW LINE.")
+            sys.stdout.flush()
             p = navigateToSearchPage('auburnTigers', 'AuburnUniv', bookNum, pageNum, county, s)
             if (deedType == 't'):
                 GetTrustDeed(imageDir, imageFormat, p)

@@ -14,6 +14,7 @@ public class TitleSearcherAPI {
 	private static ProcessBuilder pb = null;
 	private static Process process;
 	private static Scanner in;
+	private static Scanner err;
 	private static OutputStream stdin;
 	private String imageDir;
 	private String pythonPath;
@@ -21,7 +22,8 @@ public class TitleSearcherAPI {
 	private BufferedInputStream fileContent = null;
 	
 	private TitleSearcherAPI() {
-		pythonPath = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "WEB-INF" + File.separator + "lib" + File.separator + "python.exe";
+		//pythonPath = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "WEB-INF" + File.separator + "lib" + File.separator + "python.exe";
+		pythonPath = "/usr/bin/python";
 		pythonFile = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "BeautifulSoupAPI.py";
 		imageDir = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "warrantyDeedPDFs";
 		try {
@@ -88,10 +90,14 @@ public class TitleSearcherAPI {
 			if(stdin != null) {
 				stdin.write(command.getBytes());
 				stdin.flush();
-				System.out.println("Sent arguments to python file");
+				System.out.println(command);
 			}
-			while(in.hasNext()) {
-				line = in.nextLine();
+			while(in.hasNext() || err.hasNext()) {
+				if(in.hasNext()) {					
+					line = in.nextLine();
+				} else {
+					line = err.nextLine();
+				}
 				System.out.println(line);
 				/* Since the python script is running constantly to keep a connection the website to avoid login quota timeouts.
 					I added a print("--EOF--") in the file in order to know when to exit this function, otherwise we would be just

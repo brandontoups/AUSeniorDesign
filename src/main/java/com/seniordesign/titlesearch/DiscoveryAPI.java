@@ -1,12 +1,6 @@
 package com.seniordesign.titlesearch;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.List;
-import java.util.Properties;
-
 import com.ibm.watson.developer_cloud.discovery.v1.Discovery;
 import com.ibm.watson.developer_cloud.discovery.v1.model.AddDocumentOptions;
 import com.ibm.watson.developer_cloud.discovery.v1.model.Collection;
@@ -37,6 +31,7 @@ public class DiscoveryAPI {
 	
 	public DiscoveryAPI() {
 		ConfigProperties properties = new ConfigProperties();
+
 		WARRANTY_DEEDS_COLLECTION = properties.getProperty("DISCOVERY_COLLECTION");
 		VERSION = properties.getProperty("DISCOVERY_VERSION");
 		URL = properties.getProperty("DISCOVERY_ENDPOINT");

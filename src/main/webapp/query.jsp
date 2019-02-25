@@ -56,11 +56,21 @@
 					</tr>
 					<tr>
 						<td class="label">Text</td>
-						<td><% if(metadata.containsKey("text")) out.println(metadata.get("text")); %></td>
+						<td><% if(metadata.containsKey("text")) {
+								String text = metadata.get("text").toString();
+								byte[] textInBytes = text.getBytes();
+								String newText = new String(textInBytes, "US-ASCII");
+								out.println(newText);
+							} %></td>
 					</tr>
 					<tr>
 						<td class="label">Land Description</td>
-						<td><% if(metadata.containsKey("landdescription")) out.println(metadata.get("landdescription")); %></td>
+						<td><% if(metadata.containsKey("landdescription")) {
+								String landDescription = metadata.get("landdescription").toString();
+								byte[] landDescriptionInBytes = landDescription.getBytes();
+								String newLandDescription = new String(landDescriptionInBytes, "US-ASCII");
+								out.println(newLandDescription);
+						} %></td>
 					</tr>
 					<tr>
 						<td class="label">Keys</td>

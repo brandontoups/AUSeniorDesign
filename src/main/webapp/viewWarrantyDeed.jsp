@@ -11,13 +11,15 @@
 	</head>
 <body>
 	<div class="container">
-		<% 
-			String heading = (String) request.getAttribute("status");
-			if(!heading.isEmpty()) {
-		%>
+		<%
+			String statusCode = (String) request.getAttribute("statusCode");
+			String message = "";
+			if(statusCode != null) {
+				message = (String) request.getAttribute("statusDesc");
+		%>	
 			<div class="notification">
-				<h2 class="heading"><% out.println(heading); %></h2>
-			</div>
+				<h2 class="heading"><% out.println(message); %></h2>
+			</div>			
 		<% } %>
 	</div>
 </body>

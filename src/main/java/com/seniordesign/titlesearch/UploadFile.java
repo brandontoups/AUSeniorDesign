@@ -67,7 +67,9 @@ public class UploadFile extends HttpServlet {
 		builder.filename(fileName);
 		System.out.println(fileName);
 		DocumentAccepted document = collection.addDocumentToCollection(builder);
-		fileContent.close();
+		if(fileContent != null) {
+			fileContent.close();
+		}
 		
 		/*
 		 * I'm using a Timer to check the status of the Document every 20 seconds while we wait for Discovery
@@ -101,8 +103,6 @@ public class UploadFile extends HttpServlet {
 				}
 			}
 		}, 1000, 20000);
-		request.setAttribute("status", "Successfully added the document.");
-		request.getRequestDispatcher("ocr.jsp").forward(request, response);
 	}
 	
 	private void createTextFile(String fileName) {
@@ -131,6 +131,7 @@ public class UploadFile extends HttpServlet {
 				if(metadata.containsKey("text")) {
 					fileContent += metadata.get("text");
 				}
+				fileContent += " "; // Adding a space between text and land description.
 				if(metadata.containsKey("landdescription")) {
 					fileContent += metadata.get("landdescription").toString();
 				}
@@ -142,7 +143,7 @@ public class UploadFile extends HttpServlet {
 				String textFileName = splitFileName.nextToken() + ".txt";
 				
 				try {
-					ByteArrayInputStream stream = new ByteArrayInputStream(fileContent.getBytes());
+					ByteArrayInputStream stream = new ByteArrayInputStream(fileContent.getBytes("US-ASCII"));
 					BoxAPI boxAPI = new BoxAPI(Folder.WARRANTYTEXT);
 					boxAPI.uploadFile(stream, textFileName);
 					stream.close();
