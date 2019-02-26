@@ -6,20 +6,13 @@
 
 public class TrustDeed {
 
-    public String bookNumber, pageNumber;
-    public String nameOfOwner;
-    public String text;
-    public Boolean isReleased;
-    public byte[] release;
-    public byte[] trustDeedPDF;
-    public String trustDeedText;
-   
-
-    public TrustDeed(String bookNumber, String pageNumber, String nameOfOwner) {
-        this.bookNumber = bookNumber;
-        this.pageNumber = pageNumber;
-        this.nameOfOwner = nameOfOwner;
-    }
+    private String bookNumber, pageNumber;
+    private String nameOfOwner;
+    private String text;
+    private Boolean isReleased;
+    private byte[] release;
+    private byte[] trustDeedPDF;
+    private String trustDeedText;
 
     // Gets Trust deed book #
     private String getBookNumber() {
