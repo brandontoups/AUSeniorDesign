@@ -15,7 +15,7 @@ public class TrustDeed {
     public String trustDeedText;
    
 
-    public TrustDeed(String bookNumber, int pageNumber, String nameOfOwner ) {
+    public TrustDeed(String bookNumber, String pageNumber, String nameOfOwner) {
         this.bookNumber = bookNumber;
         this.pageNumber = pageNumber;
         this.nameOfOwner = nameOfOwner;
