@@ -4,6 +4,7 @@ import urllib
 import sys
 import os
 from bs4 import BeautifulSoup
+from os.path import exists
 
 website = "https://www.titlesearcher.com/"
 
@@ -323,35 +324,38 @@ def main():
         # w 0 0 imageDir pdf 0 (post 1993) john tinnell 1 (search by first and last name)
         # w 0 0 imageDir pdf 1 (pre 1993) 20 22 0 (search by book and page - only option for pre 1993 non-indexed docs)
         # Old Index Book Documents are uploaded to Box
-        with open('cookies', 'rb') as f:
-            s.cookies.update(pickle.load(f))
-        deedArguments = raw_input("Enter the deed arguments with spaces in between each argument. ")
-        deedArguments = deedArguments.split(" ")
-        deedType = deedArguments[0]
-        state = deedArguments[1]
-        county = deedArguments[2]
-        imageDir = deedArguments[3]
-        imageFormat = deedArguments[4]
-        isDataPreExtracted = deedArguments[5]
-        searchArg1 = deedArguments[6]
-        searchArg2 = deedArguments[7]
-        pageOrName = deedArguments[8]
-        if (pageOrName == '0'):
-            TitleSearch = TitleSearcher(state, county, isDataPreExtracted,
-                                        bookNum=searchArg1, pageNum=searchArg2,
-                                        firstName=None, lastName=None)
+        if (exists('cookies')):
+            with open('cookies', 'rb') as f:
+                s.cookies.update(pickle.load(f))
+            deedArguments = raw_input("Enter the deed arguments with spaces in between each argument. ")
+            deedArguments = deedArguments.split(" ")
+            deedType = deedArguments[0]
+            state = deedArguments[1]
+            county = deedArguments[2]
+            imageDir = deedArguments[3]
+            imageFormat = deedArguments[4]
+            isDataPreExtracted = deedArguments[5]
+            searchArg1 = deedArguments[6]
+            searchArg2 = deedArguments[7]
+            pageOrName = deedArguments[8]
+            if (pageOrName == '0'):
+                TitleSearch = TitleSearcher(state, county, isDataPreExtracted,
+                                            bookNum=searchArg1, pageNum=searchArg2,
+                                            firstName=None, lastName=None)
+            else:
+                TitleSearch = TitleSearcher(state, county, isDataPreExtracted,
+                                            bookNum=None, pageNum=None,
+                                            firstName=searchArg1, lastName=searchArg2)
+            p = TitleSearch.navigateToSearchPage(s)
+            if (p == None):
+                print('Property document not found. ')
+            else:
+                if (deedType == 't'):
+                    TitleSearch.GetTrustDeed(imageDir, imageFormat, p, s)
+                elif (deedType == 'w'):
+                    TitleSearch.GetWarrantyDeed(imageDir, imageFormat, p, s)
         else:
-            TitleSearch = TitleSearcher(state, county, isDataPreExtracted,
-                                        bookNum=None, pageNum=None,
-                                        firstName=searchArg1, lastName=searchArg2)
-        p = TitleSearch.navigateToSearchPage(s)
-        if (p == None):
-            print('Property document not found. ')
-        else:
-            if (deedType == 't'):
-                TitleSearch.GetTrustDeed(imageDir, imageFormat, p, s)
-            elif (deedType == 'w'):
-                TitleSearch.GetWarrantyDeed(imageDir, imageFormat, p, s)
+            print('File containing login cookies does not exist. ')
 
 if __name__ == "__main__":
     main()
