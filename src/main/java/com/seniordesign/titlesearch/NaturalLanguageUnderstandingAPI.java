@@ -1,4 +1,5 @@
 //those import give us access to the classes inside the jar file we used.
+
 import com.ibm.watson.developer_cloud.natural_language_understanding.v1.NaturalLanguageUnderstanding;
 import com.ibm.watson.developer_cloud.natural_language_understanding.v1.model.AnalysisResults;
 import com.ibm.watson.developer_cloud.natural_language_understanding.v1.model.AnalyzeOptions;
@@ -20,10 +21,8 @@ public class NaturalLanguageUnderstandingAPI {
 	  private static NaturalLanguageUnderstanding nlu;
    
 	  // Variables related to Warranty Deed (Grantor, Grantee, Book#, etc) 
-	  private static String primaryGrantor;
-	  private static String secondaryGrantor;
-	  private static String primaryGrantee;
-	  private static String secondaryGrantee;
+	  private static String[] grantors;
+	  private static String[] grantees;
 	  private static String bookNumber;
 	  private static String warrantyDeedText;
 	  private static int pageNumber;
@@ -91,11 +90,12 @@ public class NaturalLanguageUnderstandingAPI {
 			
 			// Get specific text element from list and assign to object member variable
 			// NEEDS TO BE CHANGED WHEN WE OBTAIN THE WLK MODEL --> FAKE IT TILL YOU MAKE IT METHOD
-			primaryGrantor = entityList.get(0).getText();
-			secondaryGrantor = entityList.get(1).getText();
-			bookNumber = null;
+			grantors[0] = entityList.get(0).getText();
+			grantors[1] = entityList.get(1).getText();
+			grantees[0] = entityList.get(2).getText();
+			grantees[1] = entityList.get(3).getText();
+			bookNumber = keywordList[0].getText();
 			warrantyDeedText = str; 
-			primaryGrantee = entityList.get(3).getText();
 			
 
 			
