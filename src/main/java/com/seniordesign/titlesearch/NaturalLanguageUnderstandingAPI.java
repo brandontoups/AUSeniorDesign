@@ -17,7 +17,7 @@ public class NaturalLanguageUnderstandingAPI {
 	  private static final String VERSION = "2018-11-16";
 	  private static final String URL = "https://gateway.watsonplatform.net/natural-language-understanding/api";
 	  private static final String USERNAME = "apikey";
-	  private static final String API_KEY = "r_nvI1YKmNkdn5O9gLI8RDzqoFzrVoq71gqKlDCkDboe";
+	  private static final String API_KEY = "xxx";
 	  private static NaturalLanguageUnderstanding nlu;
    
 	  // Variables related to Warranty Deed (Grantor, Grantee, Book#, etc) 
