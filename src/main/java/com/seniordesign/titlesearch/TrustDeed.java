@@ -1,3 +1,5 @@
+package com.seniordesign.titlesearch;
+
 /*
  * Trust Deed Class:
  * Holds the data about an individual Trust Deed

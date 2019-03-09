@@ -92,6 +92,12 @@ public class TitleSearcherAPI {
 				stdin.flush();
 				System.out.println(command);
 			}
+			try {
+				process.waitFor();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			while(in.hasNext() || err.hasNext()) {
 				if(in.hasNext()) {					
 					line = in.nextLine();

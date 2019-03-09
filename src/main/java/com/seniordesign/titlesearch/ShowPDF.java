@@ -32,7 +32,6 @@ public class ShowPDF extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub 
 		ServletContext context = this.getServletContext();
-		System.out.println(context.getAttribute("WD"));
 		WarrantyDeed deed = (WarrantyDeed) context.getAttribute("WD");
 		if(deed == null) {
 			System.out.println("Deed is null");

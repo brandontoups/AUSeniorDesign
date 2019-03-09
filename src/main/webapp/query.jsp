@@ -38,6 +38,7 @@
 			<% if(request.getAttribute("queryResponse") != null) { %>
 				<% QueryResponse queryResponse = (QueryResponse) request.getAttribute("queryResponse"); %>
 				<% Long matchingResults = queryResponse.getMatchingResults(); %>
+				<% out.println(matchingResults); %>
 				<% List<QueryResult> results = queryResponse.getResults(); %>
 				<% List<QueryPassages> passages = queryResponse.getPassages(); %>
 				<table>
@@ -60,18 +61,25 @@
 								String text = metadata.get("text").toString();
 								byte[] textInBytes = text.getBytes();
 								String newText = new String(textInBytes, "US-ASCII");
+								newText += " ";
+								if(metadata.containsKey("landdescription")) {
+									String landDescription = metadata.get("landdescription").toString();
+									byte[] landDescriptionInBytes = landDescription.getBytes();
+									String newLandDescription = new String(landDescriptionInBytes, "US-ASCII");
+									newText += newLandDescription;
+								}
 								out.println(newText);
 							} %></td>
 					</tr>
-					<tr>
+					<!-- <tr>
 						<td class="label">Land Description</td>
-						<td><% if(metadata.containsKey("landdescription")) {
-								String landDescription = metadata.get("landdescription").toString();
-								byte[] landDescriptionInBytes = landDescription.getBytes();
-								String newLandDescription = new String(landDescriptionInBytes, "US-ASCII");
-								out.println(newLandDescription);
-						} %></td>
-					</tr>
+						<td><% //if(metadata.containsKey("landdescription")) {
+								//String landDescription = metadata.get("landdescription").toString();
+								//byte[] landDescriptionInBytes = landDescription.getBytes();
+								//String newLandDescription = new String(landDescriptionInBytes, "US-ASCII");
+								//out.println(newLandDescription);
+						//} %></td>
+					</tr> -->
 					<tr>
 						<td class="label">Keys</td>
 						<td><% out.println(metadata.keySet()); %></td>

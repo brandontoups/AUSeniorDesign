@@ -77,11 +77,11 @@ package com.seniordesign.titlesearch;
    }
 
    // Gets warranty deed plaintext
-   public String getWarrantyDeedText() {
+   public String getText() {
      return this.text;
    }
    
-   public void setWarrantyDeedText(String newText) {
+   public void setText(String newText) {
 	   this.text = newText;
    }
 
