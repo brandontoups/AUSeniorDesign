@@ -21,7 +21,9 @@
 			<form method="POST" action="/validated" class="my-3">
 				<c:forEach var="deed" items="${history}" varStatus="status">
 					<c:set scope="page" var="index" value="${status.count - 1}" />
-					<div class="form-row">
+					<h1>Book:${deed.bookNumber} Page:${deed.pageNumber}</h1>
+					<a href="#" onClick="toggleView('view-${index}')" class="btn btn-primary">Validate</a>
+					<div id="view-${index}" class="form-row d-none">
 						<div class="form-group col">
 							<label for="pdf">PDF</label>
 							<object class="form-control" name="pdf" data="/ShowPDF?deed=${index}" type="application/pdf" width="800px"
@@ -33,10 +35,17 @@
 								<input type="hidden" name="index" value="${index}" />
 						</div>
 					</div>
-					<input type="hidden" name="action" value="updateText" />
 				</c:forEach>
-				<button class="btn btn-primary btn-lg btn-block" type="submit">Save</button>
+				<input type="hidden" name="action" value="updateText" />
+				<button class="btn btn-primary btn-lg btn-block my-4" type="submit">Save</button>
 			</form>
 		</div>
+		
+		<script>
+			function toggleView(id) {
+		       var view = document.getElementById(id);
+		       view.classList.toggle("d-none");
+		    }
+		</script>
 	</body>
 </html>
