@@ -15,7 +15,7 @@
 				<h1><a href="/">TitleSearch</a></h1>
 			</div>
 			<div class="search">
-				<form method="GET" action="GetWarrantyDeed">
+				<form method="GET" action="/search">
 					<div class="inputBar">
 						<label for="book">Warranty
 							<input placeholder="Enter Warranty Deed #" type="number" id="warranty" name="book" required />
@@ -26,6 +26,7 @@
 							<input placeholder="Enter Page #" type="number" id="page" name="page" required />
 						</label>
 					</div>
+					<input type="hidden" name="action" value="searchWD" />
 					<button type="submit">Search</button>
 				</form>
 			</div>

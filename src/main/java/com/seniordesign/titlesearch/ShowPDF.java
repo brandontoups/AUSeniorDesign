@@ -2,6 +2,7 @@ package com.seniordesign.titlesearch;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -32,11 +33,10 @@ public class ShowPDF extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub 
 		ServletContext context = this.getServletContext();
-		WarrantyDeed deed = (WarrantyDeed) context.getAttribute("WD");
-		if(deed == null) {
-			System.out.println("Deed is null");
-			return;
-		}
+		@SuppressWarnings("unchecked")
+		List<WarrantyDeed> history = (List<WarrantyDeed>) context.getAttribute("history");
+		int index = Integer.parseInt(request.getParameter("deed"));
+		WarrantyDeed deed = history.get(index);
 		byte[] pdf = deed.getPDF();
 		response.setContentType("application/pdf");
 		response.setHeader("Content-Disposition", "inline");
