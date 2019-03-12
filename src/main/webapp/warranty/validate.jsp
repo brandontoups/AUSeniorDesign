@@ -18,26 +18,36 @@
 	</head>
 	<body>
 		<div class="container">
-			<form method="POST" action="/validated" class="my-3">
-				<c:forEach var="deed" items="${history}" varStatus="status">
+			<c:forEach var="deed" items="${history}" varStatus="status">
+				<form method="POST" action="/warranty/validate" class="my-4">
 					<c:set scope="page" var="index" value="${status.count - 1}" />
-					<h1>Book:${deed.bookNumber} Page:${deed.pageNumber}</h1>
-					<a href="#" onClick="toggleView('view-${index}')" class="btn btn-primary">Validate</a>
-					<div id="view-${index}" class="form-row d-none">
-						<div class="form-group col">
-							<label for="pdf">PDF</label>
-							<object class="form-control" name="pdf" data="/ShowPDF?deed=${index}" type="application/pdf" width="800px"
-								height="900px"></object>
+					<h1>Book:${deed.bookNumber} Page:${deed.pageNumber} <a href="#view-${index}" onClick="toggleView('view-${index}')" class="btn btn-primary float-right">Validate</a></h1>
+					<div id="view-${index}" class="d-none border border-dark p-3">
+						<div class="form-row">
+							<div class="form-group col">
+								<label for="pdf">PDF</label>
+								<object class="form-control" name="pdf" data="/ShowPDF?deed=${index}" type="application/pdf" width="800px"
+									height="900px"></object>
+							</div>
+							<div class="form-group col">
+									<label for="text">OCR Text</label>							
+									<textarea class="form-control" name="text${index}" rows="50" cols="100">${deed.text}</textarea>
+									<input type="hidden" name="index" value="${index}" />
+							</div>
 						</div>
-						<div class="form-group col">
-								<label for="text">OCR Text</label>							
-								<textarea class="form-control" name="text${index}" rows="50" cols="100">${deed.text}</textarea>
-								<input type="hidden" name="index" value="${index}" />
+						<div class="w-100">
+							<input type="hidden" name="action" value="updateText" />
+							<button class="btn btn-primary btn-lg btn-block w-50 mx-auto my-4" type="submit">Save</button>
 						</div>
 					</div>
-				</c:forEach>
-				<input type="hidden" name="action" value="updateText" />
-				<button class="btn btn-primary btn-lg btn-block my-4" type="submit">Save</button>
+				</form>
+			</c:forEach>
+			<form class="border border-dark p-3 my-3" method="POST" action="/warranty/validate">
+				<h2>Suggested Next Warranty Deed</h2>
+				<p>Book: </p>
+				<p>Page: </p>
+				<input type="hidden" name="action" value="findNextWD" />
+				<button class="btn btn-primary btn-block w-50 mx-auto my-4" type="submit">Next</button>
 			</form>
 		</div>
 		

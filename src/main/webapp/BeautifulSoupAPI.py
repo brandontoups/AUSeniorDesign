@@ -144,7 +144,6 @@ class TitleSearcher:
                                 elif (imageFormat.upper() == 'PDF'):
                                     urlTotal += '&imgtype=pdf'
                                 urllib.urlretrieve(urlTotal, imageDir + os.sep + imgName + '.pdf')
-                                test = raw_input("Testing")
             else:
                 #How to distinguish between people when searching by name without additional discerning info?
                 #This implementation simply fetches all deeds on the page without selecting a person
@@ -168,7 +167,7 @@ class TitleSearcher:
                                 urlTotal += '&imgtype=tiff'
                             elif (imageFormat.upper() == 'PDF'):
                                 urlTotal += '&imgtype=pdf'
-                            urllib.urlretrieve(urlTotal, imageDir + os.sep + imgName)#+ '.pdf')
+                            urllib.urlretrieve(urlTotal, imageDir + os.sep + imgName + '.pdf')
 
         elif (self.isDataPreExtracted == '1'):
             for td in soupObject.find_all('td'):

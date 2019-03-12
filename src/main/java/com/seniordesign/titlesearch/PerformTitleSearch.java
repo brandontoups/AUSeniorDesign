@@ -30,6 +30,7 @@ maxRequestSize = 1024 * 1024 * 5 * 5)
 public class PerformTitleSearch extends HttpServlet {
 	
 	TitleSearchManager manager = TitleSearchManager.getInstance();
+	WarrantyDeed nextWD = new WarrantyDeed();
 	
 	private static final long serialVersionUID = 1L;
        

@@ -33,7 +33,7 @@ package com.seniordesign.titlesearch;
 
    // Assigns warranty deed book #
    public void setBookNumber(String bookNo) {
-
+	   this.bookNumber = bookNo;
    }
 
    // Gets warranty deed page #
@@ -43,7 +43,7 @@ package com.seniordesign.titlesearch;
 
    // Assigns warranty deed book #
    public void setPageNumber(String pageNo) {
-
+	   this.pageNumber = pageNo;
    }
 
    // Gets grantor name
