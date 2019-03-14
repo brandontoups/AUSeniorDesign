@@ -250,12 +250,30 @@ class TitleSearcher:
         homePage = s.get(website)
         soup = BeautifulSoup(homePage.text, 'html.parser')
         county = self.county.upper()
-        countySearch = ''
+        countySearch = None
 
         for a in soup.find_all('a'):
             if (a.text.strip() == 'New Search'):
                 countySearch = a['href']
                 break
+
+        if (countySearch == None): # Check if cookies have expired.
+            homePage = s.post(website, data={
+                "userName": "auburnTigers",
+                "password": "AuburnUniv",
+                "loginb": "Go"
+            })
+            with open('cookies', 'wb') as f:
+                pickle.dump(homePage.cookies, f)
+            f.close()
+            with open('cookies', 'rb') as f:
+                s.cookies.update(pickle.load(f))
+            homePage = s.get(website)
+            soup = BeautifulSoup(homePage.text, 'html.parser')
+            for a in soup.find_all('a'):
+                if (a.text.strip() == 'New Search'):
+                    countySearch = a['href']
+                    break
 
         p = s.get(str(countySearch))
         soup = BeautifulSoup(p.text, 'html.parser')
@@ -304,18 +322,6 @@ class TitleSearcher:
         pass
 
 def main():
-    '''
-    s = requests.session()
-    homePage = s.post(website, data={
-        "userName": "auburnTigers",
-        "password": "AuburnUniv",
-        "loginb": "Go"
-    })
-
-    with open('cookies', 'wb') as f:
-        pickle.dump(homePage.cookies, f)
-    '''
-
     with requests.Session() as s:
         # Example Input: t 0 0 imageDir pdf 0 18 18 0
         # Example Input: w 0 0 imageDir tiff 0 john tinnell 1
@@ -324,38 +330,48 @@ def main():
         # w 0 0 imageDir pdf 0 (post 1993) john tinnell 1 (search by first and last name)
         # w 0 0 imageDir pdf 1 (pre 1993) 20 22 0 (search by book and page - only option for pre 1993 non-indexed docs)
         # Old Index Book Documents are uploaded to Box
-        if (exists('cookies')):
-            with open('cookies', 'rb') as f:
-                s.cookies.update(pickle.load(f))
-            deedArguments = raw_input("Enter the deed arguments with spaces in between each argument. ")
-            deedArguments = deedArguments.split(" ")
-            deedType = deedArguments[0]
-            state = deedArguments[1]
-            county = deedArguments[2]
-            imageDir = deedArguments[3]
-            imageFormat = deedArguments[4]
-            isDataPreExtracted = deedArguments[5]
-            searchArg1 = deedArguments[6]
-            searchArg2 = deedArguments[7]
-            pageOrName = deedArguments[8]
-            if (pageOrName == '0'):
-                TitleSearch = TitleSearcher(state, county, isDataPreExtracted,
-                                            bookNum=searchArg1, pageNum=searchArg2,
-                                            firstName=None, lastName=None)
-            else:
-                TitleSearch = TitleSearcher(state, county, isDataPreExtracted,
-                                            bookNum=None, pageNum=None,
-                                            firstName=searchArg1, lastName=searchArg2)
-            p = TitleSearch.navigateToSearchPage(s)
-            if (p == None):
-                print('Property document not found. ')
-            else:
-                if (deedType == 't'):
-                    TitleSearch.GetTrustDeed(imageDir, imageFormat, p, s)
-                elif (deedType == 'w'):
-                    TitleSearch.GetWarrantyDeed(imageDir, imageFormat, p, s)
+        if (not exists('cookies')): # Check if cookies file exists.
+            homePage = s.post(website, data={
+                "userName": "auburnTigers",
+                "password": "AuburnUniv",
+                "loginb": "Go"
+            })
+            with open('cookies', 'wb') as f:
+                pickle.dump(homePage.cookies, f)
+            f.close()
+
+        with open('cookies', 'rb') as f:
+            s.cookies.update(pickle.load(f))
+
+        deedArguments = raw_input("Enter the deed arguments with spaces in between each argument. ")
+        deedArguments = deedArguments.split(" ")
+        deedType = deedArguments[0]
+        state = deedArguments[1]
+        county = deedArguments[2]
+        imageDir = deedArguments[3]
+        imageFormat = deedArguments[4]
+        isDataPreExtracted = deedArguments[5]
+        searchArg1 = deedArguments[6]
+        searchArg2 = deedArguments[7]
+        pageOrName = deedArguments[8]
+        if (pageOrName == '0'):
+            TitleSearch = TitleSearcher(state, county, isDataPreExtracted,
+                                        bookNum=searchArg1, pageNum=searchArg2,
+                                        firstName=None, lastName=None)
         else:
-            print('File containing login cookies does not exist. ')
+            TitleSearch = TitleSearcher(state, county, isDataPreExtracted,
+                                        bookNum=None, pageNum=None,
+                                        firstName=searchArg1, lastName=searchArg2)
+        p = TitleSearch.navigateToSearchPage(s)
+        if (p == None):
+            print('Property document not found. ')
+        else:
+            if (deedType == 't'):
+                TitleSearch.GetTrustDeed(imageDir, imageFormat, p, s)
+            elif (deedType == 'w'):
+                TitleSearch.GetWarrantyDeed(imageDir, imageFormat, p, s)
+
+
 
 if __name__ == "__main__":
     main()
