@@ -11,20 +11,16 @@ package com.seniordesign.titlesearch;
 
  public class WarrantyDeed {
 
-   public String bookNumber, pageNumber;
-   public String primaryGrantor, pimaryGrantee;
+   private String bookNumber, pageNumber;
+   private String parentBookNumber, parentPageNumber;
+   private String[] grantors;
+   private String[] grantees;
+   private String transactionDate;
+   private String yearBought;
+   private String yearSold;
+   private boolean isLatest = false;
    private String text;
    private byte[] pdf;
-
-//   // WarrantyDeed Constructor
-//   public WarrantyDeed(String bookNumber, int pageNumber, String pimaryGrantor, String primaryGrantee, String warrantyDeedText) {
-//
-//     this.bookNumber = bookNumber;
-//     this.primaryGrantor = primaryGrantor;
-//     this.primaryGrantee = primaryGrantee;
-//     this.pageNumber = pageNumber;
-//     this.warrantyDeedText = warrantyDeedText;
-//   }
 
    // Gets warranty deed book #
    public String getBookNumber() {
@@ -47,23 +43,23 @@ package com.seniordesign.titlesearch;
    }
 
    // Gets grantor name
-   public String getGrantor() {
-     return this.primaryGrantor;
+   public String[] getGrantors() {
+     return this.grantors;
    }
 
    // Assigns name to grantor
-   public void setGrantor(String grantor) {
-
+   public void setGrantors(String[] grantors) {
+	   this.grantors = grantors;
    }
 
    // Gets grantee name
-   public String getGrantee() {
-     return this.primaryGrantor;
+   public String[] getGrantees() {
+     return this.grantees;
    }
 
    // Assigns name to grantee
-   public void setGrantee(String grantee) {
-
+   public void setGrantees(String[] grantees) {
+	   this.grantees = grantees;
    }
 
    // Gets warranty deed PDF
@@ -83,6 +79,54 @@ package com.seniordesign.titlesearch;
    
    public void setText(String newText) {
 	   this.text = newText;
+   }
+   
+   public String getYearSold() {
+	   return this.yearSold;
+   }
+   
+   public void setYearSold(String year) {
+	   this.yearSold = year;
+   }
+   
+   public String getYearBought() {
+	   return this.yearBought;
+   }
+   
+   public void setYearBought(String year) {
+	   this.yearBought = year;
+   }
+   
+   public String getTransactionDate() {
+	   return this.transactionDate;
+   }
+   
+   public void setTransactionDate(String date) {
+	   this.transactionDate = date;
+   }
+   
+   public String getParentBookNumber() {
+	   return this.parentBookNumber;
+   }
+   
+   public void setParentBookNumber(String bookNo) {
+	   this.parentBookNumber = bookNo;
+   }
+   
+   public String getParentPageNumber() {
+	   return this.parentPageNumber;
+   }
+   
+   public void setParentPageNumber(String pageNo) {
+	   this.parentPageNumber = pageNo;
+   }
+   
+   public boolean getIsLatest() {
+	   return this.isLatest;
+   }
+   
+   public void setIsLatest(boolean value) {
+	   this.isLatest = value;
    }
 
 //   public void main(String[] args) {

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -23,7 +24,7 @@ import javax.servlet.http.Part;
 /**
  * Servlet implementation class PerformTitleSearch
  */
-@WebServlet(name = "/PerformTitleSearch", urlPatterns={"/", "/search", "/warranty/validate", "/validated"})
+@WebServlet(name = "/PerformTitleSearch", urlPatterns={"/", "/search", "/warranty/validate", "/warranty/history"})
 @MultipartConfig(fileSizeThreshold = 1024 * 1024 * 10,
 maxFileSize = 1024 * 1024 * 10, 
 maxRequestSize = 1024 * 1024 * 5 * 5)
@@ -58,6 +59,8 @@ public class PerformTitleSearch extends HttpServlet {
 			validateReport(request, response);
 		} else if(uri.endsWith("/search")) {
 			getWarrantyDeed(request, response);
+		} else if(uri.endsWith("/warranty/history")) {
+			buildReport(request, response);
 		}
 	}
 
@@ -72,10 +75,11 @@ public class PerformTitleSearch extends HttpServlet {
 				break;
 			case "updateText":
 				updateWarrantyDeedText(request, response);
-				WarrantyDeed deed2 = manager.createWarrantyDeed("WD207-949.pdf");
-				manager.addWarrantyDeedToHouseHistory(deed2);
-				validateReport(request, response);
+				response.sendRedirect("/warranty/history");
 				break;
+			case "getNextWD":
+				getWarrantyDeed(request, response);
+				response.sendRedirect("/warranty/history");
 			default:
 				break;
 		}
@@ -84,8 +88,13 @@ public class PerformTitleSearch extends HttpServlet {
 	protected void getWarrantyDeed(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String bookNo = request.getParameter("book");
 		String pageNo = request.getParameter("page");
-		
-		System.out.println("Book: " + bookNo + " Page: " + pageNo);
+		if(request.getParameter("next") != null) {
+			System.out.println("Book: " + bookNo + " Page: " + pageNo);
+			WarrantyDeed nextDeedInHistory = manager.getWarrantyDeed(bookNo, pageNo);
+			manager.addWarrantyDeedToHouseHistory(nextDeedInHistory);
+		} else if(request.getParameter("complete") != null) {
+			System.out.println("History complete");
+		}
 	}
 
 	protected void validateReport(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -96,16 +105,51 @@ public class PerformTitleSearch extends HttpServlet {
 		request.getRequestDispatcher("/warranty/validate.jsp").forward(request, response);
 	}
 	
+	protected void buildReport(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		List<WarrantyDeed> history = manager.getHouseHistory();
+		ServletContext context = this.getServletContext();
+		context.setAttribute("history", history);
+		request.getRequestDispatcher("/warranty/history.jsp").forward(request, response);
+	}
+	
 	protected void updateWarrantyDeedText(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		int index = Integer.parseInt(request.getParameter("index"));
-		while(request.getParameter("text" + index) != null) {			
-			String modifiedText = request.getParameter("text" + index);
-			WarrantyDeed deedToUpdate = manager.getHouseHistory().get(index);
-			if(!deedToUpdate.getText().equals(modifiedText)) {				
-				System.out.println(modifiedText);
-				deedToUpdate.setText(modifiedText);
-			}
-			index++;
+		int index = -1;
+		try {
+			index = Integer.parseInt(request.getParameter("index"));
+		} catch(NumberFormatException e) {
+			
 		}
+		if(index != -1) {		
+			WarrantyDeed deedToUpdate = manager.getHouseHistory().get(index);
+			String[] grantors = checkForEmptyFields(request.getParameterValues("grantor"));
+			String[] grantees = checkForEmptyFields(request.getParameterValues("grantee"));
+			String transaction = request.getParameter("transaction");
+			String dateFrom = request.getParameter("dateFrom");
+			String dateTo = request.getParameter("dateTo");
+			String parentBookNumber = request.getParameter("parentBookNumber");
+			String parentBookPageNumber = request.getParameter("parentBookPageNumber");
+			String legalDescription = request.getParameter("legalDescription");
+			deedToUpdate.setGrantors(grantors);
+			deedToUpdate.setGrantees(grantees);
+			deedToUpdate.setTransactionDate(transaction);
+			deedToUpdate.setYearBought(dateFrom);
+			deedToUpdate.setYearSold(dateTo);
+			deedToUpdate.setParentBookNumber(parentBookNumber);
+			deedToUpdate.setParentPageNumber(parentBookPageNumber);
+			deedToUpdate.setText(legalDescription);
+		}
+		
+	}
+	
+	private String[] checkForEmptyFields(String[] list) {
+		List<String> newList = new ArrayList<String>();
+		for(int i = 0; i < list.length; i++) {
+			if(!list[i].isEmpty()) {
+				newList.add(list[i]);
+			}
+		}
+		String[] result = new String[newList.size()];
+		newList.toArray(result);
+		return result;
 	}
 }
