@@ -20,10 +20,11 @@ public class TitleSearcherAPI {
 	private String pythonPath;
 	private String pythonFile;
 	private BufferedInputStream fileContent = null;
-	
+
 	private TitleSearcherAPI() {
 		//pythonPath = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "WEB-INF" + File.separator + "lib" + File.separator + "python.exe";
-		pythonPath = "/usr/bin/python";
+		// pythonPath = "/usr/bin/python";
+		pythonPath = "/Users/minanarayanan/anaconda2/bin/python";
 		pythonFile = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "BeautifulSoupAPI.py";
 		imageDir = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "warrantyDeedPDFs";
 		try {
@@ -38,14 +39,14 @@ public class TitleSearcherAPI {
 		}
 		System.out.println(pythonPath);
 	}
-	
+
 	public static TitleSearcherAPI getInstance() {
 		if(singleInstance == null) {
 			singleInstance = new TitleSearcherAPI();
 		}
 		return singleInstance;
 	}
-	
+
 	public void closeInputStream() {
 		try {
 			this.fileContent.close();
@@ -54,19 +55,19 @@ public class TitleSearcherAPI {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private String getImageDirectory() {
 		return this.imageDir;
 	}
-	
+
 	private String getPythonFile() {
 		return this.pythonFile;
 	}
-	
+
 	private String getPythonPath() {
 		return this.pythonPath;
 	}
-	
+
 	private BufferedInputStream returnInputStreamOfFile(String fileName) {
 		File downloadedFile = new File(this.getImageDirectory() + File.separator + fileName);
 		if(!downloadedFile.exists()) {
@@ -75,16 +76,18 @@ public class TitleSearcherAPI {
 		}
 		System.out.println("File downloaded");
 		try {
-			fileContent = new BufferedInputStream(new FileInputStream(downloadedFile));	
+			fileContent = new BufferedInputStream(new FileInputStream(downloadedFile));
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return fileContent;
 	}
-	
-	public BufferedInputStream getPDFWarrantyDeed(String bookNo, String pageNo, String county) {
-		String command = "w " + bookNo + " " + pageNo + " " + county + " " + this.getImageDirectory() + " pdf" + "\n";	
+
+	public BufferedInputStream getPDFWarrantyDeedBookNo(String bookNo, String pageNo, String county, String prePost) {
+		// TODO Change hardcoded state and county values - currently, 0 represents TN
+		//			and 0 represents Humphreys county
+		String command = "w 0 0 " + this.getImageDirectory() + " pdf " + prePost + " " + bookNo + " " + pageNo + " 0\n";
 		try {
 			String line;
 			if(stdin != null) {
@@ -93,7 +96,7 @@ public class TitleSearcherAPI {
 				System.out.println(command);
 			}
 			while(in.hasNext() || err.hasNext()) {
-				if(in.hasNext()) {					
+				if(in.hasNext()) {
 					line = in.nextLine();
 				} else {
 					line = err.nextLine();
@@ -110,8 +113,15 @@ public class TitleSearcherAPI {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		String fileName = "WD" + bookNo + "-" + pageNo + ".pdf";		
+		String fileName = "WD" + bookNo + "-" + pageNo + ".pdf";
 		BufferedInputStream fileContent = returnInputStreamOfFile(fileName);
 		return fileContent;
 	}
+
+
+	public static void main(String[] args) {
+		TitleSearcherAPI title = TitleSearcherAPI.getInstance();
+		title.getPDFWarrantyDeedBookNo("18", "21", "Humphreys", "0");
+	}
+
 }

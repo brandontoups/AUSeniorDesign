@@ -18,7 +18,7 @@ import com.seniordesign.titlesearch.TitleSearcherAPI;
 @WebServlet("/GetWarrantyDeed")
 public class GetWarrantyDeed extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+
     /**
      * @see HttpServlet#HttpServlet()
      */
@@ -35,9 +35,11 @@ public class GetWarrantyDeed extends HttpServlet {
 		response.getWriter().append("Served at: ").append(request.getContextPath());
 		String bookNo = request.getParameter("book");
 		String pageNo = request.getParameter("page");
+	  String prePost = request.getParameter("pre or post-1993");
 		try {
 			int intBookNo = Integer.parseInt(bookNo);
 			int intPageNo = Integer.parseInt(pageNo);
+			int intPrePost = Integer.parseInt(prePost);
 		} catch (NumberFormatException e) {
 			request.setAttribute("statusDesc", "Please enter a valid number.");
 			request.setAttribute("statusCode", "400");
@@ -45,19 +47,19 @@ public class GetWarrantyDeed extends HttpServlet {
 		}
 		String county = "Humphreys";
 		System.out.println(this.getServletContext().getContextPath());
-		
+
 		// Make sure the folder exists, otherwise BeautifulSoupAPI would not be able to download the file.
 		String uploadPath = this.getServletContext().getRealPath("") + File.separator + "warrantyDeedPDFs";
 		File uploadDir = new File(uploadPath);
 		if(!uploadDir.exists()) {
 			uploadDir.mkdir();
 		}
-		
+
 		BufferedInputStream fileContent = null;
 		String fileName = "";
 		try {
 			TitleSearcherAPI api = TitleSearcherAPI.getInstance();
-			fileContent = api.getPDFWarrantyDeed(bookNo, pageNo, county);
+			fileContent = api.getPDFWarrantyDeedBookNo(bookNo, pageNo, county, prePost);
 			fileName = "WD" + bookNo + "-" + pageNo + ".pdf";
 			if(fileContent == null) {
 				request.setAttribute("status", "File could not be downloaded from the website.");
@@ -69,19 +71,19 @@ public class GetWarrantyDeed extends HttpServlet {
 			request.setAttribute("status", "File could not be downloaded from the website.");
 			request.getRequestDispatcher("/viewWarrantyDeed.jsp").forward(request, response);
 		}
-		
-		
-		if(fileContent != null) {			
+
+
+		if(fileContent != null) {
 			try {
 				BoxAPI boxAPI = new BoxAPI(Folder.WARRANTYPDF);
 				String fileFolder = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "warrantyDeedPDFs";
 				File pdfFileToUpload = new File(fileFolder + File.separator + fileName);
-				
+
 				/* I have to create a new bufferedinputstream by opening the file again because Discovery was having difficulty processing the index
 					of the document. The problem is that I upload the pdf file first to Box using the API which reads the entire
 					bufferedinputstream and when this stream was also passed to Discovery, it didn't have anything to read so it would throw an internal error. */
 				BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(pdfFileToUpload));
-				if(pdfFileToUpload.exists()) {					
+				if(pdfFileToUpload.exists()) {
 					boxAPI.uploadFile(inputStream, fileName);
 					inputStream.close();
 					if(pdfFileToUpload.delete()) {
@@ -95,7 +97,7 @@ public class GetWarrantyDeed extends HttpServlet {
 				request.setAttribute("statusCode", "503");
 				request.getRequestDispatcher("/viewWarrantyDeed.jsp").forward(request, response);
 			}
-			
+
 			// Pass the inputstream to the UploadFile Servlet to handle the upload to discovery and the .txt file to Box.
 			request.setAttribute("fileContent", fileContent);
 			request.setAttribute("fileName", fileName);
@@ -111,7 +113,7 @@ public class GetWarrantyDeed extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
+
 	}
 
 }
