@@ -18,6 +18,7 @@ public class NaturalLanguageUnderstandingAPI {
 	  private static final String URL = "https://gateway.watsonplatform.net/natural-language-understanding/api";
 	  private static final String USERNAME = "apikey";
 	  private static final String API_KEY = "xxx";
+	  private static final String MODEL_NO = "xxx";
 	  private static NaturalLanguageUnderstanding nlu;
    
 	  // Variables related to Warranty Deed (Grantor, Grantee, Book#, etc) 
@@ -56,40 +57,34 @@ public class NaturalLanguageUnderstandingAPI {
 			MetadataOptions metadata= new MetadataOptions();
 
 			EntitiesOptions entitiesOptions = new EntitiesOptions.Builder()
-			  .limit(5)
-			  .build();
-
-			KeywordsOptions keywordsOptions = new KeywordsOptions.Builder()
-			  .limit(10)
+			  .model(MODEL_NO)
 			  .build();
 			
-			// Specified features that we want to extract
+		// Specified features that we want to extract
 			Features features = new Features.Builder()
 			  .metadata(metadata)
 			  .entities(entitiesOptions)
-			  .keywords(keywordsOptions)
 			  .build();
 
-			// Analyzes the specified features
+		// Analyzes the specified features
 			AnalyzeOptions parameters = new AnalyzeOptions.Builder()
 			  .html(html)
 			  .features(features)
 			  .build();
 
-			// Takes the parameters and sends them to nlu service for results
+		// Takes the parameters and sends them to nlu service for results
 			AnalysisResults response = nlu
 			  .analyze(parameters)
 			  .execute();
 
-			// Print the result
+		// Print the result
 			System.out.println(response);
 			
-			// Store results in list, iterate through list capturing sought-after elements
+		// Store results in list, iterate through list capturing sought-after elements
 			java.util.List<EntitiesResult> entityList = response.getEntities();
 			java.util.List<KeywordsResult> keywordList = response.getKeywords();
 			
-			// Get specific text element from list and assign to object member variable
-			// NEEDS TO BE CHANGED WHEN WE OBTAIN THE WLK MODEL --> FAKE IT TILL YOU MAKE IT METHOD
+		// Get specific text element from list and assign to object member variable
 			grantors[0] = entityList.get(0).getText();
 			grantors[1] = entityList.get(1).getText();
 			grantees[0] = entityList.get(2).getText();
