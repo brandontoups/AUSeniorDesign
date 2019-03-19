@@ -81,6 +81,10 @@ public class NaturalLanguageUnderstandingAPI {
 		grantees[1] = entityList.get(3).getText(); 
 
 	  }
+		
+	  public static NaturalLanguageUnderstanding retreiveJSON() {
+		return nlu;
+	  }
 	  
 	  
 }
