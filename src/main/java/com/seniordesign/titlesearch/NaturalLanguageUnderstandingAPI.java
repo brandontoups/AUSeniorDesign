@@ -22,6 +22,7 @@ public class NaturalLanguageUnderstandingAPI {
 	  private static final String API_KEY = "xxx";
 	  private static final String MODEL_NO = "xxx";
 	  private static NaturalLanguageUnderstanding nlu = null;
+	  private static AnalysisResults json = null;
    
 	  // Variables related to Warranty Deed (Grantor, Grantee, Book#, etc) 
 	  private static String[] grantors;
@@ -42,7 +43,7 @@ public class NaturalLanguageUnderstandingAPI {
 	    	return nlu;
 	  }
 	  
-	  public static NaturalLanguageUnderstanding analyzeText(String str) {
+	  public static AnalysisResults analyzeText(String str) {
 	    	// Holds the text that we want to analyze --> should be DYNAMIC
 	    	String html = str;
 
@@ -63,11 +64,11 @@ public class NaturalLanguageUnderstandingAPI {
 			  .build();
 
 		// Takes the parameters and sends them to nlu service for results
-			AnalysisResults response = nlu
+			AnalysisResults response = json
 			  .analyze(parameters)
 			  .execute();
 	  	
-		  return nlu;	
+		  return json;	
 	  }
 	  
 }
