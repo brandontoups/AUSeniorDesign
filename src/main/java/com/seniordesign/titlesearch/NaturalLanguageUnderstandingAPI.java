@@ -42,7 +42,7 @@ public class NaturalLanguageUnderstandingAPI {
 	    	return nlu;
 	  }
 	  
-	  public static void analyzeText(String str) {
+	  public static NaturalLanguageUnderstanding analyzeText(String str) {
 	    	// Holds the text that we want to analyze --> should be DYNAMIC
 	    	String html = str;
 
@@ -66,25 +66,8 @@ public class NaturalLanguageUnderstandingAPI {
 			AnalysisResults response = nlu
 			  .analyze(parameters)
 			  .execute();
-			
+	  	
+		  return nlu;	
 	  }
-			
-	  public static void assignRoles(AnalysisResults response) {
-		// Store results in list, iterate through list capturing sought-after elements
-		java.util.List<EntitiesResult> entityList = response.getEntities();
-
-
-		// Get specific text element from list and assign to object member variable -- TEMP/STC!!
-		grantors[0] = entityList.get(0).getText();
-		grantors[1] = entityList.get(1).getText();
-		grantees[0] = entityList.get(2).getText();
-		grantees[1] = entityList.get(3).getText(); 
-
-	  }
-		
-	  public static NaturalLanguageUnderstanding retreiveJSON() {
-		return nlu;
-	  }
-	  
 	  
 }
