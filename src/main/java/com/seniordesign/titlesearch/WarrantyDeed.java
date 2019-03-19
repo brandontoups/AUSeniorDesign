@@ -24,7 +24,7 @@ package com.seniordesign.titlesearch;
 	 
    public static void assignRoles(AnalysisResults json) {
    // Stores entities from NaturalLanguageUnderstanding class in iterable list (from JSON)
-   	java.util.List<EntitiesResult> entityList = response.getEntities();
+   	java.util.List<EntitiesResult> entityList = json.getEntities();
 
    // Get specific text element from list and assign to object member variable -- TEMP/STC!!
 	grantors[0] = entityList.get(0).getText();
