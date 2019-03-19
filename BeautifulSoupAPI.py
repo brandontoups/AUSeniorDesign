@@ -1,6 +1,5 @@
 import requests
 import pickle
-import urllib
 import sys
 import os
 from bs4 import BeautifulSoup
@@ -143,7 +142,14 @@ class TitleSearcher:
                                     urlTotal += '&imgtype=tiff'
                                 elif (imageFormat.upper() == 'PDF'):
                                     urlTotal += '&imgtype=pdf'
-                                urllib.urlretrieve(urlTotal, imageDir + os.sep + imgName + '.pdf')
+                                with open(imageDir + os.sep + imgName + '.pdf', 'wb') as handle:
+                                    response = s.get(urlTotal, stream=True)
+                                    if not response.ok:
+                                        print response
+                                    for block in response.iter_content(1024):
+                                        if not block:
+                                            break
+                                        handle.write(block)
             else:
                 #How to distinguish between people when searching by name without additional discerning info?
                 #This implementation simply fetches all deeds on the page without selecting a person
@@ -167,7 +173,14 @@ class TitleSearcher:
                                 urlTotal += '&imgtype=tiff'
                             elif (imageFormat.upper() == 'PDF'):
                                 urlTotal += '&imgtype=pdf'
-                            urllib.urlretrieve(urlTotal, imageDir + os.sep + imgName + '.pdf')
+                            with open(imageDir + os.sep + imgName + '.pdf', 'wb') as handle:
+                                response = s.get(urlTotal, stream=True)
+                                if not response.ok:
+                                    print response
+                                for block in response.iter_content(1024):
+                                    if not block:
+                                        break
+                                    handle.write(block)
 
         elif (self.isDataPreExtracted == '1'):
             for td in soupObject.find_all('td'):
@@ -181,7 +194,7 @@ class TitleSearcher:
 
             for frame in soup.find_all('frame'):
                 urlBody = frame['src']
-                with open(imageDir + '/' + deedType + self.bookNum + '-' +  self.pageNum, 'wb') as handle:
+                with open(imageDir + os.sep + deedType + self.bookNum + '-' +  self.pageNum + '.pdf', 'wb') as handle:
                     response = s.get(website + urlBody, stream=True)
                     if not response.ok:
                         print response
@@ -192,10 +205,10 @@ class TitleSearcher:
                 break
 
     def locateDetails(self, deedType, soupObject, s): #TODO: Modify to include cross references
+        propInfo = {}
         for br in soupObject.find_all('br'):
             for td in br.find_all('td'):
                 if (td.text.strip() == deedType):
-                    propInfo = {}
                     td = td.find_previous_sibling('td')
                     details = td.find_previous_sibling('td')
                     details = details.findNext('a')
@@ -251,12 +264,10 @@ class TitleSearcher:
         soup = BeautifulSoup(homePage.text, 'html.parser')
         county = self.county.upper()
         countySearch = None
-
         for a in soup.find_all('a'):
             if (a.text.strip() == 'New Search'):
                 countySearch = a['href']
                 break
-
         if (countySearch == None): # Check if cookies have expired.
             homePage = s.post(website, data={
                 "userName": "auburnTigers",
@@ -268,7 +279,6 @@ class TitleSearcher:
             f.close()
             with open('cookies', 'rb') as f:
                 s.cookies.update(pickle.load(f))
-            homePage = s.get(website)
             soup = BeautifulSoup(homePage.text, 'html.parser')
             for a in soup.find_all('a'):
                 if (a.text.strip() == 'New Search'):
