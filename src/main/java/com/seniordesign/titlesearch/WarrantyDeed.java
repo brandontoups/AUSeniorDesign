@@ -22,7 +22,7 @@ package com.seniordesign.titlesearch;
    private String text;
    private byte[] pdf;
 	 
-   public static void assignRoles(AnalysisResults response) {
+   public static void assignRoles(AnalysisResults json) {
    // Stores entities from NaturalLanguageUnderstanding class in iterable list (from JSON)
    	java.util.List<EntitiesResult> entityList = response.getEntities();
 
