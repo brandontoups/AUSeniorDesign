@@ -21,18 +21,6 @@ package com.seniordesign.titlesearch;
    private boolean isLatest = false;
    private String text;
    private byte[] pdf;
-	 
-   public static void assignRoles(AnalysisResults json) {
-   // Stores entities from NaturalLanguageUnderstanding class in iterable list (from JSON)
-   	java.util.List<EntitiesResult> entityList = json.getEntities();
-
-   // Get specific text element from list and assign to object member variable -- TEMP/STC!!
-	grantors[0] = entityList.get(0).getText();
-	grantors[1] = entityList.get(1).getText();
-	grantees[0] = entityList.get(2).getText();
-	grantees[1] = entityList.get(3).getText(); 
-
-  }
 
    // Gets warranty deed book #
    public String getBookNumber() {
