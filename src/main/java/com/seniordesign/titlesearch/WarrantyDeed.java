@@ -12,7 +12,7 @@ package com.seniordesign.titlesearch;
  public class WarrantyDeed {
 
    public String bookNumber, pageNumber;
-   public String primaryGrantor, pimaryGrantee;
+   public String primaryGrantor, primaryGrantee;
    private String text;
    private byte[] pdf;
 
@@ -33,7 +33,7 @@ package com.seniordesign.titlesearch;
 
    // Assigns warranty deed book #
    public void setBookNumber(String bookNo) {
-
+      this.bookNumber = bookNo;
    }
 
    // Gets warranty deed page #
@@ -43,7 +43,7 @@ package com.seniordesign.titlesearch;
 
    // Assigns warranty deed book #
    public void setPageNumber(String pageNo) {
-
+      this.pageNumber = pageNo;
    }
 
    // Gets grantor name
@@ -53,7 +53,7 @@ package com.seniordesign.titlesearch;
 
    // Assigns name to grantor
    public void setGrantor(String grantor) {
-
+      this.primaryGrantor = grantor;
    }
 
    // Gets grantee name
@@ -63,7 +63,7 @@ package com.seniordesign.titlesearch;
 
    // Assigns name to grantee
    public void setGrantee(String grantee) {
-
+      this.primaryGrantee = grantee;
    }
 
    // Gets warranty deed PDF

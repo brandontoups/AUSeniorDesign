@@ -2,12 +2,16 @@ package com.seniordesign.titlesearch;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ProcessBuilder;
 import java.util.Scanner;
+import java.nio.file.Paths;
+import com.seniordesign.titlesearch.WarrantyDeed;
 
 public class TitleSearcherAPI {
 	private static TitleSearcherAPI singleInstance = null;
@@ -84,7 +88,7 @@ public class TitleSearcherAPI {
 		return fileContent;
 	}
 
-	public BufferedInputStream getPDFWarrantyDeedBookNo(String bookNo, String pageNo, String county, String prePost) {
+	public WarrantyDeed getPDFWarrantyDeedBookNo(String bookNo, String pageNo, String county, String prePost) {
 		// TODO Change hardcoded state and county values - currently, 0 represents TN
 		//			and 0 represents Humphreys county
 		String command = "w 0 0 " + this.getImageDirectory() + " pdf " + prePost + " " + bookNo + " " + pageNo + " 0\n";
@@ -95,6 +99,7 @@ public class TitleSearcherAPI {
 				stdin.flush();
 				System.out.println(command);
 			}
+			/*
 			while(in.hasNext() || err.hasNext()) {
 				if(in.hasNext()) {
 					line = in.nextLine();
@@ -102,30 +107,37 @@ public class TitleSearcherAPI {
 					line = err.nextLine();
 				}
 				System.out.println(line);
-				/* Since the python script is running constantly to keep a connection the website to avoid login quota timeouts.
+				Since the python script is running constantly to keep a connection the website to avoid login quota timeouts.
 					I added a print("--EOF--") in the file in order to know when to exit this function, otherwise we would be just
-					waiting for the script to finish exiting (which never will). */
+					waiting for the script to finish exiting (which never will).
 				if(line.equals("--EOF--")) {
 					break;
 				}
 			}
+			*/
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		String fileName = "WD" + bookNo + "-" + pageNo + ".pdf";
-		BufferedInputStream fileContent = returnInputStreamOfFile(fileName);
 		WarrantyDeed wd = new WarrantyDeed();
-		wd.setPDF(fileContent.buf);
-		wd.setBookNumber(bookNo);
-		wd.setPageNumber(pageNo);
+		Path pathToFile = Paths.get(this.getImageDirectory() + File.separator + fileName);
+		try {
+			byte[] buf = Files.readAllBytes(pathToFile);
+			wd.setPDF(buf);
+			wd.setBookNumber(bookNo);
+			wd.setPageNumber(pageNo);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return wd;
 	}
 
-
 	public static void main(String[] args) {
 		TitleSearcherAPI title = TitleSearcherAPI.getInstance();
-		title.getPDFWarrantyDeedBookNo("18", "21", "Humphreys", "0");
+		WarrantyDeed wd = title.getPDFWarrantyDeedBookNo("18", "21", "Humphreys", "0");
+		System.out.println(wd.getBookNumber());
 	}
 
 }
