@@ -54,6 +54,90 @@ class TitleSearcher:
         })
         return p
 
+    def searchOldIndexBooks(self, soupObject, s, imageDir):
+        for a in soupObject.find_all('a'):
+            for font in a.find_all('font'):
+                if (font.text.strip() == 'View Old Index Books'):
+                    bookSearch = a['href']
+                    break
+
+        lastName = self.lastName
+        charSearch = lastName[0].lower()
+        p = s.get(website + str(bookSearch))
+        soup = BeautifulSoup(p.text, 'html.parser')
+        for tr in soup.find_all('tr'):
+            for td in tr.find_all('td'):
+                for div in td.find_all('div'):
+                    if (div.text.strip() == 'Index Books'):
+                        divNext = div.findNext('div')
+        indexBookTypes = []
+        for a in divNext.find_all('a'):
+            indexBookTypes.append(a.text.strip())
+
+        for bookType in indexBookTypes:
+            for tort in range(2):
+                if (tort == 0):
+                    tortee = "TOR"
+                else:
+                    tortee = "TEE"
+                p = s.post(website + str(bookSearch), data={
+                    "datekey": bookType,
+                    "path": charSearch, #TODO: make sure name is searchable, i.e. T for 1810-1940
+                    "bookpath": "0001",
+                    "tortee": tortee,
+                    "chars": charSearch, #TODO: make sure name is searchable
+                    "state": "tn",
+                    "county": "humphreys"
+                })
+                soup = BeautifulSoup(p.text, 'html.parser')
+                for td in soup.find_all('td'):
+                    for div in td.find_all('div'):
+                        for div2 in div.find_all('div'):
+                            if (div2.text.strip() == 'Index Page Viewer'):
+                                iFrame = div.findNext('iframe')
+                urlBody = iFrame['src']
+                urlTotal = website + urlBody
+
+                with open(imageDir + os.sep + 'IndexDirectory.pdf', 'wb') as handle:
+                    response = s.get(urlTotal, stream=True)
+                    if not response.ok:
+                        print response
+                    for block in response.iter_content(1024):
+                        if not block:
+                            break
+                        handle.write(block)
+                pageNumber = input("Please enter the index book page number. ")\
+
+                p = s.post(website + 'oldIndexPageSearch.php', data={
+                        "pageNum": pageNumber,
+                        "datekey": bookType,
+                        "path": charSearch,
+                        "bookpath": "0001",
+                        "tortee": tortee,
+                        "chars": charSearch,
+                        "state": "tn",
+                        "county": "humphreys",
+                        "submit" : "Look Up Page"
+                })
+
+                soup = BeautifulSoup(p.text, 'html.parser')
+                for td in soup.find_all('td'):
+                    for div in td.find_all('div'):
+                        for div2 in div.find_all('div'):
+                            if (div2.text.strip() == 'Page View'):
+                                iFrame = div.findNext('iframe')
+
+                urlBody = iFrame['src']
+                urlTotal = website + urlBody
+                with open(imageDir + os.sep + 'IndexPage.pdf', 'wb') as handle:
+                    response = s.get(urlTotal, stream=True)
+                    if not response.ok:
+                        print response
+                    for block in response.iter_content(1024):
+                        if not block:
+                            break
+                        handle.write(block)
+
     def searchNonIndexedDocs(self, soupObject, s):
         for a in soupObject.find_all('a'):
             for font in a.find_all('font'):
@@ -259,7 +343,7 @@ class TitleSearcher:
                                 break
         return propInfo
 
-    def navigateToSearchPage(self, s):
+    def navigateToSearchPage(self, s, imageDir):
         homePage = s.get(website)
         soup = BeautifulSoup(homePage.text, 'html.parser')
         county = self.county.upper()
@@ -312,7 +396,10 @@ class TitleSearcher:
             elif (self.firstName != None):
                 p = self.searchByName(soup, s)
         elif (self.isDataPreExtracted == '1'):
-            p = self.searchNonIndexedDocs(soup, s)
+            if (self.bookNum != None):
+                p = self.searchNonIndexedDocs(soup, s)
+            elif (self.firstName != None):
+                p = self.searchOldIndexBooks(soup, s, imageDir)
         return p
 
     def GetWarrantyDeed(self, imageDir, imageFormat, p, s):
@@ -339,6 +426,7 @@ def main():
         # w 0 0 imageDir pdf 0 19 34 0
         # w 0 0 imageDir pdf 0 (post 1993) john tinnell 1 (search by first and last name)
         # w 0 0 imageDir pdf 1 (pre 1993) 20 22 0 (search by book and page - only option for pre 1993 non-indexed docs)
+        # w 0 0 imagedir pdf 1 (pre1993) john tinnell 1 (search pre 1993 names in old index books)
         # Old Index Book Documents are uploaded to Box
         if (not exists('cookies')): # Check if cookies file exists.
             homePage = s.post(website, data={
@@ -372,13 +460,13 @@ def main():
             TitleSearch = TitleSearcher(state, county, isDataPreExtracted,
                                         bookNum=None, pageNum=None,
                                         firstName=searchArg1, lastName=searchArg2)
-        p = TitleSearch.navigateToSearchPage(s)
+        p = TitleSearch.navigateToSearchPage(s, imageDir)
         if (p == None):
             print('Property document not found. ')
         else:
-            if (deedType == 't'):
+            if ((deedType == 't') & (isDataPreExtracted != 1) & (pageOrName != 1)):
                 TitleSearch.GetTrustDeed(imageDir, imageFormat, p, s)
-            elif (deedType == 'w'):
+            elif ((deedType == 'w') & (isDataPreExtracted != 1) & (pageOrName != 1)):
                 TitleSearch.GetWarrantyDeed(imageDir, imageFormat, p, s)
 
 
