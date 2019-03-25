@@ -115,7 +115,11 @@ public class TitleSearcherAPI {
 		}
 		String fileName = "WD" + bookNo + "-" + pageNo + ".pdf";
 		BufferedInputStream fileContent = returnInputStreamOfFile(fileName);
-		return fileContent;
+		WarrantyDeed wd = new WarrantyDeed();
+		wd.setPDF(fileContent.buf);
+		wd.setBookNumber(bookNo);
+		wd.setPageNumber(pageNo);
+		return wd;
 	}
 
 
