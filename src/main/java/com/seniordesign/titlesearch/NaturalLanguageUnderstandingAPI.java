@@ -1,5 +1,4 @@
 package com.seniordesign.titlesearch;
-//those import give us access to the classes inside the jar file we used.
 import com.ibm.watson.developer_cloud.natural_language_understanding.v1.NaturalLanguageUnderstanding;
 import com.ibm.watson.developer_cloud.natural_language_understanding.v1.model.AnalysisResults;
 import com.ibm.watson.developer_cloud.natural_language_understanding.v1.model.AnalyzeOptions;
@@ -10,65 +9,70 @@ import com.ibm.watson.developer_cloud.natural_language_understanding.v1.model.Ke
 import com.ibm.watson.developer_cloud.natural_language_understanding.v1.model.KeywordsResult;
 import com.ibm.watson.developer_cloud.natural_language_understanding.v1.model.MetadataOptions; 
 
+// Connects to NLU API, analyzes the WarrantyDeed text for entities, and returns them.
+// JRG - last updated 3/26/2019 @ 2:49pm
 
 public class NaturalLanguageUnderstandingAPI {
-	
-	public class NaturalLanguageUnderstandingAPI {
-	
+
 	// Variables integral to functionality of NLU service
 	  private static final String VERSION = "2018-11-16";
 	  private static final String URL = "https://gateway.watsonplatform.net/natural-language-understanding/api";
 	  private static final String USERNAME = "apikey";
 	  private static final String API_KEY = "xxx";
-	  private static final String MODEL_NO = "xxx";
+	  private static final String MODEL_NO = "yyy";
+	  public static String json;
 	  private static NaturalLanguageUnderstanding nlu = null;
-	  private static AnalysisResults json = null;
-   
-	  // Variables related to Warranty Deed (Grantor, Grantee, Book#, etc) 
-	  private static String[] grantors;
-	  private static String[] grantees;
-	  private static String bookNumber, pageNumber;
-	  private static String text;
-	  private static int pageNumber;
-	  private static byte[] pdf;
-	  
-	  
-	  // Sets up NLU credentials and Builders for text analysis, connects to NLU service
-	  private NaturalLanguageUnderstanding connectToNLU() {
-	    
-		// Creates NLU Service and adds credentials
+
+
+	// Sets up NLU credentials and undergoes text analysis
+	// Parameter should be WarrantyDeed text
+	  public static String analyzeText(String str) {
+
+      // Creates NLU Service and adds credentials
 	  	NaturalLanguageUnderstanding nlu = new NaturalLanguageUnderstanding(VERSION);
 	    	nlu.setEndPoint(URL);
 	    	nlu.setUsernameAndPassword(USERNAME, API_KEY);
-	    	return nlu;
-	  }
-	  
-	  public static AnalysisResults analyzeText(String str) {
-	    	// Holds the text that we want to analyze --> should be DYNAMIC
-	    	String html = str;
 
-	    	// Entities are the only parameters we get back from the service about our text
+    	// Holds the text that we want to analyze --> should be a DYNAMIC variable
+    	String html = str;
+
+	    // Entities, keywords, and metadata are parameters we get back from the service about our text
+			MetadataOptions metadata= new MetadataOptions();
+
 			EntitiesOptions entitiesOptions = new EntitiesOptions.Builder()
-			  .model(MODEL_NO)
-			  .build();
-			
-		// Specified features that we want to extract
-			Features features = new Features.Builder()
-			  .entities(entitiesOptions)
+				.model(MODEL_NO) // our custom WLK model...
 			  .build();
 
-		// Analyzes the specified features
+			KeywordsOptions keywordsOptions = new KeywordsOptions.Builder()
+			  .limit(5)
+			  .build();
+
+			// Specified features that we want to extract
+			Features features = new Features.Builder()
+			  .metadata(metadata)
+			  .entities(entitiesOptions)
+			  .keywords(keywordsOptions)
+			  .build();
+
+			// Analyzes the specified features
 			AnalyzeOptions parameters = new AnalyzeOptions.Builder()
 			  .html(html)
 			  .features(features)
 			  .build();
 
-		// Takes the parameters and sends them to nlu service for results
-			AnalysisResults response = json
+			// Takes the parameters and sends them to nlu service for results
+			AnalysisResults response = nlu
 			  .analyze(parameters)
 			  .execute();
-	  	
-		  return json;	
+
+			// Stores AnalysisResults object in JSON string
+			json = response.toString();
+
+			// Print the result
+			System.out.println(json);
+			
+			return json;
+			
 	  }
-	  
+
 }
