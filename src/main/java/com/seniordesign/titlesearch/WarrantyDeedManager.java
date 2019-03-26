@@ -20,7 +20,7 @@ public class WarrantyDeedManager {
    private String text;
    private byte[] pdf;
 	
-	public void populateWarrantyDeed(String bookNumber, String pageNumber) {
+	public WarrantyDeed populateWarrantyDeed(String bookNumber, String pageNumber) {
 		
 		// Calls databaseManager class and (hopefully) retrieves a WarrantyDeed
 		DatabaseManagerAPI dbManager = new DatabaseManagerAPI();
@@ -45,6 +45,8 @@ public class WarrantyDeedManager {
 		//uses GSON to convert JSON String into Object, uses reflection to store JSON text into WarrantyDeed Object fields 
 		Gson gson = new Gson();
 		wd = gson.fromJson(jsonInString, WarrantyDeed.class);
+		
+		return wd;
 	}
 
 
