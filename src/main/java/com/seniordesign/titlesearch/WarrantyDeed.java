@@ -129,9 +129,4 @@ package com.seniordesign.titlesearch;
 	   this.isLatest = value;
    }
 
-//   public void main(String[] args) {
-//     NaturalLanguageUnderstanding nlu = new NaturalLanguageUnderstandingAPI();
-//     
-//   }
-
  }
