@@ -18,16 +18,17 @@ public class TitleSearcherAPI {
 	private static ProcessBuilder pb = null;
 	private static Process process;
 	private static Scanner in;
-	private static Scanner err;
 	private static OutputStream stdin;
 	private String imageDir;
 	private String pythonPath;
 	private String pythonFile;
 	private BufferedInputStream fileContent = null;
+	private static final int MAXGRANTORS = 10;
+	private static final int MAXGRANTEES = 10;
 
 	private TitleSearcherAPI() {
 		//pythonPath = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "WEB-INF" + File.separator + "lib" + File.separator + "python.exe";
-		// pythonPath = "/usr/bin/python";
+		//pythonPath = "/usr/bin/python";
 		pythonPath = "/Users/minanarayanan/anaconda2/bin/python";
 		pythonFile = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "BeautifulSoupAPI.py";
 		imageDir = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "warrantyDeedPDFs";
@@ -37,9 +38,8 @@ public class TitleSearcherAPI {
 			process = pb.start();
 			in = new Scanner(process.getInputStream());
 			stdin = process.getOutputStream();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (IOException exc) {
+			exc.printStackTrace();
 		}
 		System.out.println(pythonPath);
 	}
@@ -54,9 +54,8 @@ public class TitleSearcherAPI {
 	public void closeInputStream() {
 		try {
 			this.fileContent.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (IOException exc) {
+			exc.printStackTrace();
 		}
 	}
 
@@ -81,9 +80,8 @@ public class TitleSearcherAPI {
 		System.out.println("File downloaded");
 		try {
 			fileContent = new BufferedInputStream(new FileInputStream(downloadedFile));
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (FileNotFoundException exc) {
+			exc.printStackTrace();
 		}
 		return fileContent;
 	}
@@ -91,6 +89,9 @@ public class TitleSearcherAPI {
 	public WarrantyDeed getPDFWarrantyDeedBookNo(String bookNo, String pageNo, String county, String prePost) {
 		// TODO Change hardcoded state and county values - currently, 0 represents TN
 		//			and 0 represents Humphreys county
+		WarrantyDeed wd = new WarrantyDeed();
+		String[] grantorsList = new String[MAXGRANTORS];
+		String[] granteesList = new String[MAXGRANTEES];
 		String command = "w 0 0 " + this.getImageDirectory() + " pdf " + prePost + " " + bookNo + " " + pageNo + " 0\n";
 		try {
 			String line;
@@ -99,45 +100,66 @@ public class TitleSearcherAPI {
 				stdin.flush();
 				System.out.println(command);
 			}
-			/*
-			while(in.hasNext() || err.hasNext()) {
-				if(in.hasNext()) {
-					line = in.nextLine();
-				} else {
-					line = err.nextLine();
+			while((in.hasNext()) && (in != null)) {
+				line = in.nextLine();
+				if (line.trim().equals("Date:"))
+				{
+					wd.setTransactionDate(in.nextLine());
 				}
-				System.out.println(line);
-				Since the python script is running constantly to keep a connection the website to avoid login quota timeouts.
-					I added a print("--EOF--") in the file in order to know when to exit this function, otherwise we would be just
-					waiting for the script to finish exiting (which never will).
-				if(line.equals("--EOF--")) {
-					break;
+				if (line.trim().equals("Grantors:"))
+				{
+					line = in.nextLine();
+					int grantorsIndex = 0;
+					while (!(line.trim().equals("Grantees:")))
+					{
+                  if (!(line.trim().isEmpty()))
+                  {
+                     grantorsList[grantorsIndex] = line;
+                     grantorsIndex += 1;
+                  }
+						line = in.nextLine();
+					}
+				}
+				if (line.trim().equals("Grantees:"))
+				{
+					line = in.nextLine();
+					granteesList[0] = line;
+					int granteesIndex = 1;
+					while (in.hasNext())
+					{
+						line = in.nextLine();
+						if (!(line.trim().isEmpty()))
+						{
+							granteesList[granteesIndex] = line;
+							granteesIndex += 1;
+						}
+					}
 				}
 			}
-			*/
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			wd.setGrantors(grantorsList);
+			wd.setGrantees(granteesList);
+
+		} catch (IOException exc) {
+			exc.printStackTrace();
 		}
 		String fileName = "WD" + bookNo + "-" + pageNo + ".pdf";
-		WarrantyDeed wd = new WarrantyDeed();
 		Path pathToFile = Paths.get(this.getImageDirectory() + File.separator + fileName);
 		try {
 			byte[] buf = Files.readAllBytes(pathToFile);
 			wd.setPDF(buf);
 			wd.setBookNumber(bookNo);
 			wd.setPageNumber(pageNo);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (IOException exc) {
+			exc.printStackTrace();
 		}
 		return wd;
 	}
-
+   /*
 	public static void main(String[] args) {
 		TitleSearcherAPI title = TitleSearcherAPI.getInstance();
 		WarrantyDeed wd = title.getPDFWarrantyDeedBookNo("18", "21", "Humphreys", "0");
 		System.out.println(wd.getBookNumber());
 	}
+   */
 
 }

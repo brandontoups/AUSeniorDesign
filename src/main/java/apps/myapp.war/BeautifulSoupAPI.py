@@ -80,12 +80,35 @@ class TitleSearcher:
                     tortee = "TOR"
                 else:
                     tortee = "TEE"
+                    if ((bookType == '1968-1978td') | (bookType == '1979-1993td') | (bookType == 'gbi')):
+                        break
+                if ((bookType == '1810-1940') | (bookType == 'gbi')):
+                    if (lastName[0:2].lower() == 'mc'):
+                        charSearch = lastName[0:2].lower()
+                if ((bookType == 'gbi') & (charSearch == 'x')):
+                    break
+                elif ((bookType == '1940-1994') | (bookType == '1968-1978td') | (bookType == '1979-1993td')):
+                    if (charSearch == 'a' | charSearch == 'b'):
+                        charSearch = 'A-B'
+                    elif (charSearch == 'c' | charSearch == 'd'):
+                        charSearch = 'C-D'
+                    elif (charSearch == 'e' | charSearch == 'f' | charSearch == 'g'):
+                        charSearch = 'E-G'
+                    elif (charSearch == 'i' | charSearch == 'j' | charSearch == 'k'):
+                        charSearch = 'I-K'
+                    elif (charSearch == 'n' | charSearch == 'o' | charSearch == 'p' | charSearch == 'q'):
+                        charSearch = 'N-Q'
+                    elif (charSearch == 't' | charSearch == 'u' | charSearch == 'v'):
+                        charSearch = 'T-V'
+                    elif (charSearch == 'w' | charSearch == 'x' | charSearch == 'y' | charSearch == 'z'):
+                        charSearch = 'W-Z'
+
                 p = s.post(website + str(bookSearch), data={
                     "datekey": bookType,
-                    "path": charSearch, #TODO: make sure name is searchable, i.e. T for 1810-1940
+                    "path": charSearch,
                     "bookpath": "0001",
                     "tortee": tortee,
-                    "chars": charSearch, #TODO: make sure name is searchable
+                    "chars": charSearch,
                     "state": "tn",
                     "county": "humphreys"
                 })
@@ -442,7 +465,7 @@ def main():
         with open('cookies', 'rb') as f:
             s.cookies.update(pickle.load(f))
 
-        deedArguments = raw_input("Enter the deed arguments with spaces in between each argument. ")
+        deedArguments = raw_input()
         deedArguments = deedArguments.split(" ")
         deedType = deedArguments[0]
         state = deedArguments[1]
