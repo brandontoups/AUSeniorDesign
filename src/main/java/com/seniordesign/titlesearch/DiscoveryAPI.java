@@ -1,6 +1,14 @@
 package com.seniordesign.titlesearch;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import com.google.gson.JsonObject;
 import com.ibm.watson.developer_cloud.discovery.v1.Discovery;
 import com.ibm.watson.developer_cloud.discovery.v1.model.AddDocumentOptions;
 import com.ibm.watson.developer_cloud.discovery.v1.model.Collection;
@@ -16,9 +24,12 @@ import com.ibm.watson.developer_cloud.discovery.v1.model.ListCollectionsResponse
 import com.ibm.watson.developer_cloud.discovery.v1.model.ListEnvironmentsOptions;
 import com.ibm.watson.developer_cloud.discovery.v1.model.ListEnvironmentsResponse;
 import com.ibm.watson.developer_cloud.discovery.v1.model.ListFieldsOptions;
+import com.ibm.watson.developer_cloud.discovery.v1.model.Notice;
 import com.ibm.watson.developer_cloud.discovery.v1.model.QueryOptions;
 import com.ibm.watson.developer_cloud.discovery.v1.model.QueryResponse;
+import com.ibm.watson.developer_cloud.discovery.v1.model.QueryResult;
 import com.ibm.watson.developer_cloud.service.security.IamOptions;
+import com.ibm.watson.developer_cloud.util.ResponseUtils;
 
 public class DiscoveryAPI {
 	private String WARRANTY_DEEDS_COLLECTION;
@@ -133,4 +144,117 @@ public class DiscoveryAPI {
 		QueryResponse response = discovery.query(options).execute();
 		return response;
 	}
+	
+	public void populateWarrantyDeedText(WarrantyDeed wd) {
+		InputStream fileContent = new ByteArrayInputStream(wd.getPDF());
+		final String fileName = "WD" + wd.getBookNumber() + "-" + wd.getPageNumber() + ".pdf";
+		DocumentAccepted document = null;
+		
+		if(!checkIfFileExistsInDiscovery(fileName)) {					
+			AddDocumentOptions.Builder builder = new AddDocumentOptions.Builder();
+			builder.file(fileContent);
+			builder.fileContentType("application/pdf");
+			builder.filename(fileName);
+			document = addDocumentToCollection(builder);
+			waitForDiscoveryToProcessDocument(fileName, document);
+		}
+		String text = getOCRTextFromDiscovery(fileName);
+		wd.setText(text);
+	}
+	
+	private void waitForDiscoveryToProcessDocument(String fileName, DocumentAccepted document) {
+		final GetDocumentStatusOptions.Builder statusBuilder = new GetDocumentStatusOptions.Builder();
+		
+		try {
+			statusBuilder.documentId(document.getDocumentId());
+		} catch(NullPointerException e) {
+			e.printStackTrace();
+			return;
+		}
+		
+		boolean isDocumentProcessed = false;
+		
+		while(!isDocumentProcessed) {
+			DocumentStatus status = getDocumentStatus(statusBuilder);
+			if(status.getStatus().equals("available") || status.getStatus().equals("available with notices")) {
+				isDocumentProcessed = true;
+			} else if(status.getStatus().equals("failed")) {		
+				isDocumentProcessed = true;
+				System.out.println("Discovery failed to process file.");
+				List<Notice> notices = status.getNotices();
+				for(Notice notice : notices) {
+					System.out.println("Document ID: " + notice.getDocumentId());
+					System.out.println("Notice ID: " + notice.getNoticeId());
+					System.out.println("Severity: " + notice.getSeverity());
+					System.out.println("Step error occured: " + notice.getStep());
+					System.out.println("Description of error: " + notice.getDescription());
+				}
+			}
+			try {
+				Thread.sleep(20000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private String getOCRTextFromDiscovery(String fileName) {
+		QueryOptions.Builder builder = new QueryOptions.Builder();
+		String filterQuery = "extracted_metadata.filename::";
+		filterQuery += fileName;
+		builder.filter(filterQuery);
+		QueryResponse queryResponse = runQuery(builder);
+		List<QueryResult> results = queryResponse.getResults();
+		HashMap<String, Object> metadata = results.get(0);
+		String newText = "";
+		if(metadata.containsKey("text")) {
+			String text = metadata.get("text").toString();
+			byte[] textInBytes = text.getBytes();
+			try {
+				newText = new String(textInBytes, "US-ASCII");
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			newText += " ";
+			if(metadata.containsKey("landdescription")) {
+				String landDescription = metadata.get("landdescription").toString();
+				byte[] landDescriptionInBytes = landDescription.getBytes();
+				String newLandDescription = "";
+				try {
+					newLandDescription = new String(landDescriptionInBytes, "US-ASCII");
+				} catch (UnsupportedEncodingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				newText += newLandDescription;
+			}
+		}
+		return newText;
+	}
+	
+	private boolean checkIfFileExistsInDiscovery(String filename) {
+		QueryOptions.Builder builder = new QueryOptions.Builder();
+		String filterQuery = "extracted_metadata.filename::";
+		filterQuery += filename;
+		builder.filter(filterQuery);
+		DiscoveryAPI api = new DiscoveryAPI();
+		QueryResponse queryResponse = api.runQuery(builder);
+		List<QueryResult> results = queryResponse.getResults();
+		if(results.isEmpty()) {
+			return false;
+		}
+		return true;
+	}
+	
+//	public static void main(String[] args) {
+//		DiscoveryAPI api = new DiscoveryAPI();
+//		TitleSearchManager manager = TitleSearchManager.getInstance();
+//		WarrantyDeed deed = manager.createWarrantyDeed("WD207-832.pdf");
+//		deed.setBookNumber("207");
+//		deed.setPageNumber("832");
+//		api.populateWarrantyDeedText(deed);
+//		System.out.println("WD TEXT: " + deed.getText());
+//	}
 }
