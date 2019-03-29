@@ -1,2 +1,3 @@
 src/main/webapp/WEB-INF/config.json
 src/main/webapp/WEB-INF/config.properties
+.DS_Store
