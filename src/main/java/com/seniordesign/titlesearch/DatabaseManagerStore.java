@@ -21,7 +21,7 @@ public interface DatabaseManagerStore {
 	/*
 	 * Put a WarrantyDeed to the store
 	 */
-	public WarrantyDeed persist(WarrantyDeed wd);
+	public WarrantyDeed store(WarrantyDeed wd);
 	
 	public void delete(String id);
 }

@@ -65,68 +65,65 @@ public class MongoDBDatabaseManager implements DatabaseManagerStore{
 	public Collection<WarrantyDeed> getAll() {
 		
 		List<WarrantyDeed> wds = new ArrayList<WarrantyDeed>();
-		try {
-			MongoIterable<String> listDatabaseNames = createClient().listDatabaseNames();
-			Document document;
-			WarrantyDeed warrantyDeed = new WarrantyDeed();
-			MongoCursor<Document> cursor = collection.find().iterator();
-			try {
-				while(cursor.hasNext()) {
-					document = cursor.next();
-					ArrayList<Document> grantees = (ArrayList<Document>) document.get("grantees");
-					String[] grantees1 = (String[]) grantees.toArray();
-					
-					ArrayList<Document> grantors = (ArrayList<Document>) document.get("grantors");
-					String[] grantor = (String[]) grantees.toArray();
-					
-					byte[] outputBytes = ((Binary)document.get("PDF")).getData();
-					
-					warrantyDeed.setBookNumber(document.getString("bookNumber"));
-					warrantyDeed.setPageNumber(document.getString("pageNumber"));
-					warrantyDeed.setParentBookNumber(document.getString("parentBookNumber"));
-					warrantyDeed.setParentPageNumber(document.getString("parentPageNumber"));
-					warrantyDeed.setText(document.getString("text"));
-					warrantyDeed.setTransactionDate(document.getString("transactionDate"));
-					warrantyDeed.setYearBought(document.getString("yearBought"));
-					warrantyDeed.setYearSold(document.getString("yearSold"));
-					warrantyDeed.setIsLatest(document.getBoolean("isLatest"));
-					warrantyDeed.setGrantees(grantees1);
-					warrantyDeed.setGrantors(grantor);
-					warrantyDeed.setPDF(outputBytes);
-					
-					wds.add(warrantyDeed);
-				}
-			}finally {
-				cursor.close();
-			}
-		} catch (Exception e) {
-			return null;
+		collection = mg.getCollection("deeds");
+		
+		List<WarrantyDeed> w = new ArrayList<WarrantyDeed>();
+		List<Document> documents = (List<Document>) collection.find().into(new ArrayList<Document>());
+		int count = 0;
+		for(Document d : documents) {
+			WarrantyDeed wd = new WarrantyDeed();
+			List<Object> grantees = (List<Object>) d.get("grantees");
+			Object[] o = grantees.toArray();
+			
+			String[] strArray = Arrays.copyOf(o, o.length, String[].class);
+			
+			List<Object> grantors = (List<Object>) d.get("grantors");
+			Object[] a = grantors.toArray();
+			
+			String[] strArray1 = Arrays.copyOf(a, a.length, String[].class);
+			
+			byte[] byteArray = (byte[]) d.get("pdf");
+			
+			wd.setBookNumber(d.getString("bookNumber"));
+			wd.setPageNumber(d.getString("pageNumber"));
+			wd.setParentBookNumber(d.getString("parentBookNumber"));
+			wd.setParentPageNumber(d.getString("parentPageNumber"));
+			wd.setText(d.getString("text"));
+			wd.setTransactionDate(d.getString("transactionDate"));
+			wd.setYearBought(d.getString("yearBought"));
+			wd.setYearSold(d.getString("yearSold"));
+			wd.setIsLatest(d.getBoolean("isLatest"));
+			wd.setGrantees(strArray);
+			wd.setGrantors(strArray1);
+			wd.setPDF(byteArray);
+		
+			WarrantyDeed weed = new WarrantyDeed();
+			weed = wd;
+			w.add(count, weed);
+			count = count + 1;
 		}
-		return wds;
+		
+	
+		return w;
 	}
 	
+	/**
+	 * Don't really need this function but I included it in case
+	 */
 	public WarrantyDeed get(String id) {
 		collection = mg.getCollection("deeds");
 		
-		/*
-		Document doc1 = new Document("id", id);
-		FindIterable<Document> doc2 = collection.find(doc1);
-		Document doc = new Document();
-		for(Document document : doc2) {
-			if(document.get("id").equals(id)) {
-				doc = document; 
-			}
-		}
-		*/
+		
+		
 	
 		Document doc = new Document();
 		
-	
+		
 		FindIterable<Document> documents = collection.find(Filters.eq("id", id));
 		ArrayList<Document> docs = new ArrayList();
 		documents.into(docs);
 		
-		for(Document doc1: docs) {
+		for(Document doc1 : docs) {
 			if(doc1.get("id").equals(id)) {
 				doc = doc1;
 				break;
@@ -165,10 +162,10 @@ public class MongoDBDatabaseManager implements DatabaseManagerStore{
 	}
 	
 	/*
-	 * persist function
+	 * stores the object into the database
 	 */
 	
-	public WarrantyDeed persist(WarrantyDeed wd) {
+	public WarrantyDeed store(WarrantyDeed wd) {
 		collection = mg.getCollection("deeds");
 		
 		Document doc = new Document("WarrantyDeed", wd.getID());
@@ -177,7 +174,7 @@ public class MongoDBDatabaseManager implements DatabaseManagerStore{
 		
 		Document update = new Document("id",wd.getID())
 				.append("bookNumber", wd.getBookNumber())
-				.append("pageNumber", wd.getBookNumber())
+				.append("pageNumber", wd.getPageNumber())
 				.append("parentPageNumber", wd.getParentPageNumber())
 				.append("parentBookNumber", wd.getParentBookNumber())
 				.append("text", wd.getText())
@@ -193,10 +190,8 @@ public class MongoDBDatabaseManager implements DatabaseManagerStore{
 		
 		FindIterable<Document> documents = collection.find();
 		
-		MongoCursor<Document> cursor = documents.iterator();
-		while(cursor.hasNext()){
-			System.out.println(cursor.next());
-		}
+		
+		
 	
 		
 		return wd;
