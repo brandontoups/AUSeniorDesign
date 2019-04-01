@@ -31,6 +31,7 @@ package com.seniordesign.titlesearch;
    // Assigns warranty deed book #
    public void setBookNumber(String bookNo) {
 	   this.bookNumber = bookNo;
+	   updateID();
    }
 
    // Gets warranty deed page #
@@ -41,6 +42,7 @@ package com.seniordesign.titlesearch;
    // Assigns warranty deed book #
    public void setPageNumber(String pageNo) {
 	   this.pageNumber = pageNo;
+	   updateID();
    }
 
    // Gets grantor name
@@ -112,6 +114,7 @@ package com.seniordesign.titlesearch;
    
    public void setParentBookNumber(String bookNo) {
 	   this.parentBookNumber = bookNo;
+	   updateID();
    }
    
    public String getParentPageNumber() {
@@ -120,6 +123,7 @@ package com.seniordesign.titlesearch;
    
    public void setParentPageNumber(String pageNo) {
 	   this.parentPageNumber = pageNo;
+	   updateID();
    }
    
    public boolean getIsLatest() {

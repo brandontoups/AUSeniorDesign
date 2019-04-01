@@ -4,25 +4,35 @@ package com.seniordesign.titlesearch;
 //import org.bson.types.ObjectId;
 
 import com.mongodb.*;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.MongoIterable;
+import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.InsertOneOptions;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.model.UpdateOptions;
-import com.mongodb.client.MongoCursor;
+
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.bson.types.Binary;
+import com.github.jkutner.EnvKeyStore;
+import com.mongodb.client.*;
+
+
+import java.io.IOException;
+import java.security.*;
+import java.security.cert.CertificateException;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.SSLContext;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Collection;
 
-public class MongoDBDatabaseManager implements DatabaseManagerStore {
+public class MongoDBDatabaseManager implements DatabaseManagerStore{
 	private MongoDatabase mg = null;
 	private static final String databaseName = "deeds";
 	private MongoCollection<Document> collection;
+	
 	
 	public MongoDBDatabaseManager() {
 		MongoClient client = createClient();
@@ -40,9 +50,15 @@ public class MongoDBDatabaseManager implements DatabaseManagerStore {
 	}
 	
 	private static MongoClient createClient() {
-		String url = "mongodb://admin:NOOEWWGDKPTOQDRP@sl-us-south-1-portal.49.dblayer.com:19885,sl-us-south-1-portal.53.dblayer.com:19885/compose?authSource=admin&ssl=true";
-		MongoClient mongoClient = new MongoClient(new MongoClientURI(url));
-		return mongoClient;
+		MongoClient cl = null;
+	
+			
+        MongoClientURI connectionString = new MongoClientURI("mongodb://admin:DFUGXMSLGXMYJAEH@portal-ssl914-52.bmix-dal-yp-bff5989d-92c8-4504-9502-4ea667bef63e.3300760346.composedb.com:19886,portal-ssl839-53.bmix-dal-yp-bff5989d-92c8-4504-9502-4ea667bef63e.3300760346.composedb.com:19886/compose?authSource=admin&ssl=true");
+        MongoClient mongoClient = new MongoClient(connectionString);
+        cl = mongoClient;
+		
+		return cl;
+		
 		
 	}
 	
@@ -77,7 +93,7 @@ public class MongoDBDatabaseManager implements DatabaseManagerStore {
 					warrantyDeed.setGrantees(grantees1);
 					warrantyDeed.setGrantors(grantor);
 					warrantyDeed.setPDF(outputBytes);
-					warrantyDeed.updateID();
+					
 					wds.add(warrantyDeed);
 				}
 			}finally {
@@ -91,14 +107,44 @@ public class MongoDBDatabaseManager implements DatabaseManagerStore {
 	
 	public WarrantyDeed get(String id) {
 		collection = mg.getCollection("deeds");
-		Document doc = collection.find(Filters.eq("id", id)).first();
-		ArrayList<Document> grantees = (ArrayList<Document>) doc.get("grantees");
-		String[] grantees1 = (String[]) grantees.toArray();
 		
-		ArrayList<Document> grantors = (ArrayList<Document>) doc.get("grantors");
-		String[] grantor = (String[]) grantees.toArray();
+		/*
+		Document doc1 = new Document("id", id);
+		FindIterable<Document> doc2 = collection.find(doc1);
+		Document doc = new Document();
+		for(Document document : doc2) {
+			if(document.get("id").equals(id)) {
+				doc = document; 
+			}
+		}
+		*/
+	
+		Document doc = new Document();
 		
-		byte[] outputBytes = ((Binary)doc.get("PDF")).getData();
+	
+		FindIterable<Document> documents = collection.find(Filters.eq("id", id));
+		ArrayList<Document> docs = new ArrayList();
+		documents.into(docs);
+		
+		for(Document doc1: docs) {
+			if(doc1.get("id").equals(id)) {
+				doc = doc1;
+				break;
+			}
+		}
+	
+		List<Object> grantees = (List<Object>) doc.get("grantees");
+		Object[] o = grantees.toArray();
+		
+		String[] strArray = Arrays.copyOf(o, o.length, String[].class); 
+		
+		List<Object> grantors = (List<Object>) doc.get("grantors");
+		Object[] a = grantors.toArray();
+		
+		String[] strArray1 = Arrays.copyOf(a, a.length, String[].class);
+		
+		byte[] byteArray = (byte[]) doc.get("pdf");
+		
 		
 		WarrantyDeed newWarrantyDeed = new WarrantyDeed();
 		newWarrantyDeed.setBookNumber(doc.getString("bookNumber"));
@@ -110,10 +156,11 @@ public class MongoDBDatabaseManager implements DatabaseManagerStore {
 		newWarrantyDeed.setYearBought(doc.getString("yearBought"));
 		newWarrantyDeed.setYearSold(doc.getString("yearSold"));
 		newWarrantyDeed.setIsLatest(doc.getBoolean("isLatest"));
-		newWarrantyDeed.setGrantees(grantees1);
-		newWarrantyDeed.setGrantors(grantor);
-		newWarrantyDeed.setPDF(outputBytes);
-		newWarrantyDeed.updateID();
+		newWarrantyDeed.setGrantees(strArray);
+		newWarrantyDeed.setGrantors(strArray1);
+		newWarrantyDeed.setPDF(byteArray);
+		
+		
 		return newWarrantyDeed;
 	}
 	
@@ -123,8 +170,12 @@ public class MongoDBDatabaseManager implements DatabaseManagerStore {
 	
 	public WarrantyDeed persist(WarrantyDeed wd) {
 		collection = mg.getCollection("deeds");
+		
 		Document doc = new Document("WarrantyDeed", wd.getID());
-		Document update = new Document("$set", new Document()
+		List<String> grantees = Arrays.asList(wd.getGrantees());
+		List<String> grantors = Arrays.asList(wd.getGrantors());
+		
+		Document update = new Document("id",wd.getID())
 				.append("bookNumber", wd.getBookNumber())
 				.append("pageNumber", wd.getBookNumber())
 				.append("parentPageNumber", wd.getParentPageNumber())
@@ -134,13 +185,20 @@ public class MongoDBDatabaseManager implements DatabaseManagerStore {
 				.append("yearSold", wd.getYearSold())
 				.append("isLatest", wd.getIsLatest())
 				.append("transactionDate", wd.getTransactionDate())
-				.append("grantees", wd.getGrantees())
-				.append("grantors", wd.getGrantors())
-				.append("PDF", wd.getPDF())
-				.append("id", wd.getID()));
-		UpdateOptions updateOptions = new UpdateOptions().upsert(true);
-		collection.updateOne(doc, update, updateOptions);
-		wd.updateID();
+				.append("grantees", grantees)
+				.append("grantors", grantors)
+				.append("PDF", wd.getPDF());
+		InsertOneOptions insertOneOptions = new InsertOneOptions();
+		collection.insertOne(update, insertOneOptions);
+		
+		FindIterable<Document> documents = collection.find();
+		
+		MongoCursor<Document> cursor = documents.iterator();
+		while(cursor.hasNext()){
+			System.out.println(cursor.next());
+		}
+	
+		
 		return wd;
 	}
 	

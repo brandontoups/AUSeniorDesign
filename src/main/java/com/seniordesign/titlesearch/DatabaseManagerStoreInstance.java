@@ -8,10 +8,6 @@ public class DatabaseManagerStoreInstance{
 			instance = cvif;
 		}
 	} 
-	
-	/*
-	 * calls the get instance function from the databaseManagerStore file
-	 */
 	public static DatabaseManagerStore getInstance() {
 		return instance;
 		
