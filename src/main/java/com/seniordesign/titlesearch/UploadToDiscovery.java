@@ -17,7 +17,6 @@ import javax.servlet.http.Part;
 import com.ibm.watson.developer_cloud.discovery.v1.model.AddDocumentOptions;
 import com.ibm.watson.developer_cloud.discovery.v1.model.DocumentAccepted;
 import com.ibm.watson.developer_cloud.discovery.v1.model.QueryOptions;
-import com.ibm.watson.developer_cloud.discovery.v1.model.QueryPassages;
 import com.ibm.watson.developer_cloud.discovery.v1.model.QueryResponse;
 import com.ibm.watson.developer_cloud.discovery.v1.model.QueryResult;
 
@@ -52,7 +51,6 @@ public class UploadToDiscovery extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-				
 				String fileName;
 				Part filePart = request.getPart("fileInput");
 				String path = filePart.getSubmittedFileName();

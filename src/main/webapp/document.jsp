@@ -21,20 +21,6 @@
 				</div>
 			</form>
 		</div>
-		<%
-			String heading = "";
-			String extraInfo = ""; 
-			if(request.getAttribute("isDocumentDeleted") != null && request.getAttribute("isDocumentDeleted").equals(true)) {
-				heading = "Success";
-				extraInfo = "Document was deleted";
-			}
-		%>
-		<% if(!heading.isEmpty()) { %>
-			<div class="notification">
-				<h2 class="heading"><% out.println(heading); %></h2>
-				<p class="extraInfo"><% out.println(extraInfo); %></p>
-			</div>
-		<% } %>
 	</div>
 </body>
 </html>

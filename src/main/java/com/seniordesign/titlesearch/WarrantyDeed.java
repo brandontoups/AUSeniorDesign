@@ -11,16 +11,20 @@ package com.seniordesign.titlesearch;
 
  public class WarrantyDeed {
 
-   private String bookNumber, pageNumber;
-   private String parentBookNumber, parentPageNumber;
+   private String bookNumber = "";
+   private String pageNumber = "";
+   private String parentBookNumber = "";
+   private String parentPageNumber = "";
    private String[] grantors;
    private String[] grantees;
-   private String transactionDate;
-   private String yearBought;
-   private String yearSold;
+   private String transactionDate = "";
+   private String yearBought = "";
+   private String yearSold = "";
    private boolean isLatest = false;
-   private String text;
+   private String text = "";
    private byte[] pdf;
+   private String id = "";
+   private boolean isValidated = false;
 
    // Gets warranty deed book #
    public String getBookNumber() {
@@ -30,6 +34,7 @@ package com.seniordesign.titlesearch;
    // Assigns warranty deed book #
    public void setBookNumber(String bookNo) {
 	   this.bookNumber = bookNo;
+	   this.updateID();
    }
 
    // Gets warranty deed page #
@@ -40,6 +45,7 @@ package com.seniordesign.titlesearch;
    // Assigns warranty deed book #
    public void setPageNumber(String pageNo) {
 	   this.pageNumber = pageNo;
+	   this.updateID();
    }
 
    // Gets grantor name
@@ -111,6 +117,7 @@ package com.seniordesign.titlesearch;
    
    public void setParentBookNumber(String bookNo) {
 	   this.parentBookNumber = bookNo;
+	   this.updateID();
    }
    
    public String getParentPageNumber() {
@@ -119,6 +126,7 @@ package com.seniordesign.titlesearch;
    
    public void setParentPageNumber(String pageNo) {
 	   this.parentPageNumber = pageNo;
+	   this.updateID();
    }
    
    public boolean getIsLatest() {
@@ -127,6 +135,22 @@ package com.seniordesign.titlesearch;
    
    public void setIsLatest(boolean value) {
 	   this.isLatest = value;
+   }
+   
+   public String getId() {
+	   return this.id;
+   }
+   
+   public void updateID() {
+	   this.id = this.bookNumber + "-" + this.pageNumber + "-" + this.parentBookNumber + "-" + this.parentPageNumber;
+   }
+   
+   public boolean getIsValidated() {
+	   return this.isValidated;
+   }
+   
+   public void setIsValidated(boolean isValid) {
+	   this.isValidated = isValid;
    }
 
 //   public void main(String[] args) {

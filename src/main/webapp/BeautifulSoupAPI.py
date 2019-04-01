@@ -1,6 +1,5 @@
 import requests
 import pickle
-import urllib
 import sys
 import os
 from bs4 import BeautifulSoup
@@ -54,6 +53,113 @@ class TitleSearcher:
             "executeSearch": "Execute Search"
         })
         return p
+
+    def searchOldIndexBooks(self, soupObject, s, imageDir):
+        for a in soupObject.find_all('a'):
+            for font in a.find_all('font'):
+                if (font.text.strip() == 'View Old Index Books'):
+                    bookSearch = a['href']
+                    break
+
+        lastName = self.lastName
+        charSearch = lastName[0].lower()
+        p = s.get(website + str(bookSearch))
+        soup = BeautifulSoup(p.text, 'html.parser')
+        for tr in soup.find_all('tr'):
+            for td in tr.find_all('td'):
+                for div in td.find_all('div'):
+                    if (div.text.strip() == 'Index Books'):
+                        divNext = div.findNext('div')
+        indexBookTypes = []
+        for a in divNext.find_all('a'):
+            indexBookTypes.append(a.text.strip())
+
+        for bookType in indexBookTypes:
+            for tort in range(2):
+                if (tort == 0):
+                    tortee = "TOR"
+                else:
+                    tortee = "TEE"
+                    if ((bookType == '1968-1978td') | (bookType == '1979-1993td') | (bookType == 'gbi')):
+                        break
+                if ((bookType == '1810-1940') | (bookType == 'gbi')):
+                    if (lastName[0:2].lower() == 'mc'):
+                        charSearch = lastName[0:2].lower()
+                if ((bookType == 'gbi') & (charSearch == 'x')):
+                    break
+                elif ((bookType == '1940-1994') | (bookType == '1968-1978td') | (bookType == '1979-1993td')):
+                    if (charSearch == 'a' | charSearch == 'b'):
+                        charSearch = 'A-B'
+                    elif (charSearch == 'c' | charSearch == 'd'):
+                        charSearch = 'C-D'
+                    elif (charSearch == 'e' | charSearch == 'f' | charSearch == 'g'):
+                        charSearch = 'E-G'
+                    elif (charSearch == 'i' | charSearch == 'j' | charSearch == 'k'):
+                        charSearch = 'I-K'
+                    elif (charSearch == 'n' | charSearch == 'o' | charSearch == 'p' | charSearch == 'q'):
+                        charSearch = 'N-Q'
+                    elif (charSearch == 't' | charSearch == 'u' | charSearch == 'v'):
+                        charSearch = 'T-V'
+                    elif (charSearch == 'w' | charSearch == 'x' | charSearch == 'y' | charSearch == 'z'):
+                        charSearch = 'W-Z'
+
+                p = s.post(website + str(bookSearch), data={
+                    "datekey": bookType,
+                    "path": charSearch,
+                    "bookpath": "0001",
+                    "tortee": tortee,
+                    "chars": charSearch,
+                    "state": "tn",
+                    "county": "humphreys"
+                })
+                soup = BeautifulSoup(p.text, 'html.parser')
+                for td in soup.find_all('td'):
+                    for div in td.find_all('div'):
+                        for div2 in div.find_all('div'):
+                            if (div2.text.strip() == 'Index Page Viewer'):
+                                iFrame = div.findNext('iframe')
+                urlBody = iFrame['src']
+                urlTotal = website + urlBody
+
+                with open(imageDir + os.sep + 'IndexDirectory.pdf', 'wb') as handle:
+                    response = s.get(urlTotal, stream=True)
+                    if not response.ok:
+                        print response
+                    for block in response.iter_content(1024):
+                        if not block:
+                            break
+                        handle.write(block)
+                pageNumber = input("Please enter the index book page number. ")\
+
+                p = s.post(website + 'oldIndexPageSearch.php', data={
+                        "pageNum": pageNumber,
+                        "datekey": bookType,
+                        "path": charSearch,
+                        "bookpath": "0001",
+                        "tortee": tortee,
+                        "chars": charSearch,
+                        "state": "tn",
+                        "county": "humphreys",
+                        "submit" : "Look Up Page"
+                })
+
+                soup = BeautifulSoup(p.text, 'html.parser')
+                for td in soup.find_all('td'):
+                    for div in td.find_all('div'):
+                        for div2 in div.find_all('div'):
+                            if (div2.text.strip() == 'Page View'):
+                                iFrame = div.findNext('iframe')
+
+                urlBody = iFrame['src']
+                urlTotal = website + urlBody
+                with open(imageDir + os.sep + 'IndexPage.pdf', 'wb') as handle:
+                    response = s.get(urlTotal, stream=True)
+                    if not response.ok:
+                        print response
+                    for block in response.iter_content(1024):
+                        if not block:
+                            break
+                        handle.write(block)
 
     def searchNonIndexedDocs(self, soupObject, s):
         for a in soupObject.find_all('a'):
@@ -126,8 +232,9 @@ class TitleSearcher:
                     for td in br.find_all('td'):
                         if (td.text.strip() == deedType):
                             imgDetails = td.find_previous_sibling('td')
-                            imgName = imgDetails.find_all('span')
-                            imgName = imgName[1].text.strip()
+                            #imgName = imgDetails.find_all('span')
+                            #imgName = imgName[1].text.strip()
+                            imgName = "WD" + self.bookNum + "-" + self.pageNum;
                             aTag = td.findNext('a')
 
                             while (aTag.has_attr('onclick') != True):
@@ -143,7 +250,14 @@ class TitleSearcher:
                                     urlTotal += '&imgtype=tiff'
                                 elif (imageFormat.upper() == 'PDF'):
                                     urlTotal += '&imgtype=pdf'
-                                urllib.urlretrieve(urlTotal, imageDir + os.sep + imgName + '.pdf')
+                                with open(imageDir + os.sep + imgName + '.pdf', 'wb') as handle:
+                                    response = s.get(urlTotal, stream=True)
+                                    if not response.ok:
+                                        print response
+                                    for block in response.iter_content(1024):
+                                        if not block:
+                                            break
+                                        handle.write(block)
             else:
                 #How to distinguish between people when searching by name without additional discerning info?
                 #This implementation simply fetches all deeds on the page without selecting a person
@@ -167,7 +281,14 @@ class TitleSearcher:
                                 urlTotal += '&imgtype=tiff'
                             elif (imageFormat.upper() == 'PDF'):
                                 urlTotal += '&imgtype=pdf'
-                            urllib.urlretrieve(urlTotal, imageDir + os.sep + imgName + '.pdf')
+                            with open(imageDir + os.sep + imgName + '.pdf', 'wb') as handle:
+                                response = s.get(urlTotal, stream=True)
+                                if not response.ok:
+                                    print response
+                                for block in response.iter_content(1024):
+                                    if not block:
+                                        break
+                                    handle.write(block)
 
         elif (self.isDataPreExtracted == '1'):
             for td in soupObject.find_all('td'):
@@ -181,7 +302,7 @@ class TitleSearcher:
 
             for frame in soup.find_all('frame'):
                 urlBody = frame['src']
-                with open(imageDir + '/' + deedType + self.bookNum + '-' +  self.pageNum, 'wb') as handle:
+                with open(imageDir + os.sep + deedType + self.bookNum + '-' +  self.pageNum + '.pdf', 'wb') as handle:
                     response = s.get(website + urlBody, stream=True)
                     if not response.ok:
                         print response
@@ -192,10 +313,10 @@ class TitleSearcher:
                 break
 
     def locateDetails(self, deedType, soupObject, s): #TODO: Modify to include cross references
+        propInfo = {}
         for br in soupObject.find_all('br'):
             for td in br.find_all('td'):
                 if (td.text.strip() == deedType):
-                    propInfo = {}
                     td = td.find_previous_sibling('td')
                     details = td.find_previous_sibling('td')
                     details = details.findNext('a')
@@ -246,16 +367,31 @@ class TitleSearcher:
                                 break
         return propInfo
 
-    def navigateToSearchPage(self, s):
+    def navigateToSearchPage(self, s, imageDir):
         homePage = s.get(website)
         soup = BeautifulSoup(homePage.text, 'html.parser')
         county = self.county.upper()
-        countySearch = ''
-
+        countySearch = None
         for a in soup.find_all('a'):
             if (a.text.strip() == 'New Search'):
                 countySearch = a['href']
                 break
+        if (countySearch == None): # Check if cookies have expired.
+            homePage = s.post(website, data={
+                "userName": "auburnTigers",
+                "password": "AuburnUniv",
+                "loginb": "Go"
+            })
+            with open('cookies', 'wb') as f:
+                pickle.dump(homePage.cookies, f)
+            f.close()
+            with open('cookies', 'rb') as f:
+                s.cookies.update(pickle.load(f))
+            soup = BeautifulSoup(homePage.text, 'html.parser')
+            for a in soup.find_all('a'):
+                if (a.text.strip() == 'New Search'):
+                    countySearch = a['href']
+                    break
 
         p = s.get(str(countySearch))
         soup = BeautifulSoup(p.text, 'html.parser')
@@ -284,7 +420,10 @@ class TitleSearcher:
             elif (self.firstName != None):
                 p = self.searchByName(soup, s)
         elif (self.isDataPreExtracted == '1'):
-            p = self.searchNonIndexedDocs(soup, s)
+            if (self.bookNum != None):
+                p = self.searchNonIndexedDocs(soup, s)
+            elif (self.firstName != None):
+                p = self.searchOldIndexBooks(soup, s, imageDir)
         return p
 
     def GetWarrantyDeed(self, imageDir, imageFormat, p, s):
@@ -304,18 +443,6 @@ class TitleSearcher:
         pass
 
 def main():
-    '''
-    s = requests.session()
-    homePage = s.post(website, data={
-        "userName": "auburnTigers",
-        "password": "AuburnUniv",
-        "loginb": "Go"
-    })
-
-    with open('cookies', 'wb') as f:
-        pickle.dump(homePage.cookies, f)
-    '''
-
     with requests.Session() as s:
         # Example Input: t 0 0 imageDir pdf 0 18 18 0
         # Example Input: w 0 0 imageDir tiff 0 john tinnell 1
@@ -323,39 +450,51 @@ def main():
         # w 0 0 imageDir pdf 0 19 34 0
         # w 0 0 imageDir pdf 0 (post 1993) john tinnell 1 (search by first and last name)
         # w 0 0 imageDir pdf 1 (pre 1993) 20 22 0 (search by book and page - only option for pre 1993 non-indexed docs)
+        # w 0 0 imagedir pdf 1 (pre1993) john tinnell 1 (search pre 1993 names in old index books)
         # Old Index Book Documents are uploaded to Box
-        if (exists('cookies')):
-            with open('cookies', 'rb') as f:
-                s.cookies.update(pickle.load(f))
-            deedArguments = raw_input("Enter the deed arguments with spaces in between each argument. ")
-            deedArguments = deedArguments.split(" ")
-            deedType = deedArguments[0]
-            state = deedArguments[1]
-            county = deedArguments[2]
-            imageDir = deedArguments[3]
-            imageFormat = deedArguments[4]
-            isDataPreExtracted = deedArguments[5]
-            searchArg1 = deedArguments[6]
-            searchArg2 = deedArguments[7]
-            pageOrName = deedArguments[8]
-            if (pageOrName == '0'):
-                TitleSearch = TitleSearcher(state, county, isDataPreExtracted,
-                                            bookNum=searchArg1, pageNum=searchArg2,
-                                            firstName=None, lastName=None)
-            else:
-                TitleSearch = TitleSearcher(state, county, isDataPreExtracted,
-                                            bookNum=None, pageNum=None,
-                                            firstName=searchArg1, lastName=searchArg2)
-            p = TitleSearch.navigateToSearchPage(s)
-            if (p == None):
-                print('Property document not found. ')
-            else:
-                if (deedType == 't'):
-                    TitleSearch.GetTrustDeed(imageDir, imageFormat, p, s)
-                elif (deedType == 'w'):
-                    TitleSearch.GetWarrantyDeed(imageDir, imageFormat, p, s)
+        if (not exists('cookies')): # Check if cookies file exists.
+            homePage = s.post(website, data={
+                "userName": "auburnTigers",
+                "password": "AuburnUniv",
+                "loginb": "Go"
+            })
+            with open('cookies', 'wb') as f:
+                pickle.dump(homePage.cookies, f)
+            f.close()
+
+        with open('cookies', 'rb') as f:
+            s.cookies.update(pickle.load(f))
+        f.close()
+
+        deedArguments = raw_input()
+        deedArguments = deedArguments.split(" ")
+        deedType = deedArguments[0]
+        state = deedArguments[1]
+        county = deedArguments[2]
+        imageDir = deedArguments[3]
+        imageFormat = deedArguments[4]
+        isDataPreExtracted = deedArguments[5]
+        searchArg1 = deedArguments[6]
+        searchArg2 = deedArguments[7]
+        pageOrName = deedArguments[8]
+        if (pageOrName == '0'):
+            TitleSearch = TitleSearcher(state, county, isDataPreExtracted,
+                                        bookNum=searchArg1, pageNum=searchArg2,
+                                        firstName=None, lastName=None)
         else:
-            print('File containing login cookies does not exist. ')
+            TitleSearch = TitleSearcher(state, county, isDataPreExtracted,
+                                        bookNum=None, pageNum=None,
+                                        firstName=searchArg1, lastName=searchArg2)
+        p = TitleSearch.navigateToSearchPage(s, imageDir)
+        if (p == None):
+            print('Property document not found. ')
+        else:
+            if ((deedType == 't') & (isDataPreExtracted != 1) & (pageOrName != 1)):
+                TitleSearch.GetTrustDeed(imageDir, imageFormat, p, s)
+            elif ((deedType == 'w') & (isDataPreExtracted != 1) & (pageOrName != 1)):
+                TitleSearch.GetWarrantyDeed(imageDir, imageFormat, p, s)
+
+
 
 if __name__ == "__main__":
     main()

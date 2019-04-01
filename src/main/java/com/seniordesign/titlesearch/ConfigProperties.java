@@ -11,6 +11,7 @@ public class ConfigProperties {
 	public ConfigProperties() {
 		properties = new Properties();
 		String filePath = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "WEB-INF" + File.separator + "config.properties";
+		//String localFilePath = new File("").getAbsolutePath() + File.separator + "src" + File.separator + "main" + File.separator + "webapp" + File.separator + "WEB-INF" + File.separator + "config.properties";
 		try {
 			properties.load(new FileInputStream(filePath));
 		} catch (FileNotFoundException e) {

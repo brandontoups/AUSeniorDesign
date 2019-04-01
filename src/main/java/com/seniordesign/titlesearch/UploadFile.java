@@ -77,7 +77,12 @@ public class UploadFile extends HttpServlet {
 		 * their declaration.
 		 */
 		final GetDocumentStatusOptions.Builder statusBuilder = new GetDocumentStatusOptions.Builder();
-		statusBuilder.documentId(document.getDocumentId());
+		try {
+			statusBuilder.documentId(document.getDocumentId());
+		} catch(NullPointerException e) {
+			e.printStackTrace();
+			return;
+		}
 		final Timer timer = new Timer();
 		timer.schedule(new TimerTask() {
 			@Override

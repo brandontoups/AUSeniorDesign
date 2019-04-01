@@ -9,6 +9,10 @@
 		<welcome-file>default.htm</welcome-file>
 		<welcome-file>default.jsp</welcome-file>
 	</welcome-file-list>
+	<mime-mapping>
+	    <extension>css</extension>
+	    <mime-type>text/css</mime-type>
+	</mime-mapping>
 	<jsp-config>
 	    <jsp-property-group>
 	        <url-pattern>*.jsp</url-pattern>
