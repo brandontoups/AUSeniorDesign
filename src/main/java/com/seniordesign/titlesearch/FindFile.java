@@ -52,7 +52,7 @@ public class FindFile extends HttpServlet {
 		String action = request.getParameter("action");
 		String query = request.getParameter("query");
 		QueryOptions.Builder builder = new QueryOptions.Builder();
-		DiscoveryAPI api = null;
+		DiscoveryAPI api = new DiscoveryAPI();
 		QueryResponse queryResponse = null;
 		List<QueryResult> results = null;
 		List<QueryPassages> passages = null;
@@ -68,7 +68,6 @@ public class FindFile extends HttpServlet {
 				builder.query("text:" + naturalLanguageQuery);
 				builder.passages(true);
 				builder.passagesCount(passagesCount);
-				api = new DiscoveryAPI();
 				queryResponse = api.runQuery(builder);
 				passages = queryResponse.getPassages();
 				if(passages != null) {

@@ -45,6 +45,26 @@
 			<artifactId>slf4j-simple</artifactId>
 			<version>1.6.4</version>
 		</dependency>
+		<dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver</artifactId>
+            <version>3.4.2</version>
+        </dependency>
+        <dependency>
+        	<groupId>org.mongodb</groupId>
+        	<artifactId>mongodb-driver-sync</artifactId>
+        	<version>3.10.1</version>
+    	</dependency>
+    	<dependency>
+        	<groupId>org.mongodb</groupId>
+        	<artifactId>mongodb-driver-legacy</artifactId>
+        	<version>3.10.1</version>
+    	</dependency>
+    	<dependency>
+        	<groupId>org.mongodb</groupId>
+        	<artifactId>mongodb-driver</artifactId>
+        	<version>3.10.1</version>
+    	</dependency>
 	</dependencies>
 	<build>
 		<finalName>${project.name}</finalName>

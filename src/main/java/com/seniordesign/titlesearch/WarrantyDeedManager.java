@@ -26,9 +26,9 @@ public class WarrantyDeedManager {
 	public WarrantyDeed populateWarrantyDeed(String bookNumber, String pageNumber) throws FileNotFoundException {
 
 		// Calls databaseManager class and (hopefully) retrieves a WarrantyDeed
-//		DatabaseManagerAPI dbManager = new DatabaseManagerAPI();
-//		WarrantyDeed wd = dbManager.getWarrantyDeed(bookNumber,pageNumber);
-		WarrantyDeed wd = null;
+		DatabaseManagerAPI dbManager = new DatabaseManagerAPI();
+		WarrantyDeed wd = dbManager.getWarrantyDeed(bookNumber,pageNumber);
+//		WarrantyDeed wd = null;
 
 		// If deed doesn't exist within database, Calls TitleSearcher class and retrieves a WarrantyDeed
 		if (wd == null) {
@@ -42,25 +42,25 @@ public class WarrantyDeedManager {
 					wd = titleSearch.getPDFWarrantyDeedBookNo(bookNumber, pageNumber, "0", "0");
 				}
 			}
+
+			// Warranty deed is not available on TitleSearcher.com
+	//		if (wd.getPDF().length == 0) {
+	//			throw new FileNotFoundException("Warranty Deed was not found.");
+	//		}
+	
+			// Call discovery service to fill WarrantyDeed text field
+			DiscoveryAPI discoveryAPI = new DiscoveryAPI();
+			discoveryAPI.populateWarrantyDeedText(wd);
+	
+			// Calls nlu service to fill entity fields (grantor, grantee)
+			NaturalLanguageUnderstandingAPI nluAPI = new NaturalLanguageUnderstandingAPI();
+			String jsonInString = NaturalLanguageUnderstandingAPI.analyzeText(wd.getText());
+	
+			//uses GSON to convert JSON String into Object, uses reflection to store JSON text into WarrantyDeed Object fields
+			Gson gson = new Gson();
+			wd = gson.fromJson(jsonInString, WarrantyDeed.class);
+
 		}
-
-		// Warranty deed is not available on TitleSearcher.com
-		if (wd.getPDF().length == 0) {
-			throw new FileNotFoundException("Warranty Deed was not found.");
-		}
-
-		// Call discovery service to fill WarrantyDeed text field
-		DiscoveryAPI discoveryAPI = new DiscoveryAPI();
-		discoveryAPI.populateWarrantyDeedText(wd);
-
-		// Calls nlu service to fill entity fields (grantor, grantee)
-		NaturalLanguageUnderstandingAPI nluAPI = new NaturalLanguageUnderstandingAPI();
-		String jsonInString = NaturalLanguageUnderstandingAPI.analyzeText(wd.getText());
-
-		//uses GSON to convert JSON String into Object, uses reflection to store JSON text into WarrantyDeed Object fields
-		Gson gson = new Gson();
-		wd = gson.fromJson(jsonInString, WarrantyDeed.class);
-
 		return wd;
 	}
 

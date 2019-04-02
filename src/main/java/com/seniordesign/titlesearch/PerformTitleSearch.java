@@ -30,7 +30,7 @@ public class PerformTitleSearch extends HttpServlet {
      */
     public PerformTitleSearch() {
         super();
-        TitleSearchManager.main(new String[0]);
+        //TitleSearchManager.main(new String[0]);
         // TODO Auto-generated constructor stub
     }
     
@@ -141,7 +141,7 @@ public class PerformTitleSearch extends HttpServlet {
 		} catch(NumberFormatException e) {
 			return;
 		}
-		if(index != -1) {
+		if(index >= 0) {
 			WarrantyDeed validatedWD = new WarrantyDeed();
 			validatedWD.setBookNumber(request.getParameter("bookNumber"));
 			validatedWD.setPageNumber(request.getParameter("pageNumber"));

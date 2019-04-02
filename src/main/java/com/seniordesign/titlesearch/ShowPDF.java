@@ -38,11 +38,13 @@ public class ShowPDF extends HttpServlet {
 		int index = Integer.parseInt(request.getParameter("deed"));
 		WarrantyDeed deed = history.get(index);
 		byte[] pdf = deed.getPDF();
-		response.setContentType("application/pdf");
-		response.setHeader("Content-Disposition", "inline");
-		ServletOutputStream output = response.getOutputStream();
-		output.write(pdf);
-		output.close();
+		if(pdf != null) {			
+			response.setContentType("application/pdf");
+			response.setHeader("Content-Disposition", "inline");
+			ServletOutputStream output = response.getOutputStream();
+			output.write(pdf);
+			output.close();
+		}
 	}
 
 	/**

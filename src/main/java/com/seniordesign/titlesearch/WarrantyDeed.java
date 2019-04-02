@@ -152,6 +152,10 @@ package com.seniordesign.titlesearch;
    public void setIsValidated(boolean isValid) {
 	   this.isValidated = isValid;
    }
+   
+   public String getID() {
+	   return this.id;
+   }
 
 //   public void main(String[] args) {
 //     NaturalLanguageUnderstanding nlu = new NaturalLanguageUnderstandingAPI();

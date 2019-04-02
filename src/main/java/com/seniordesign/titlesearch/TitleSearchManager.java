@@ -92,8 +92,12 @@ public class TitleSearchManager {
 		testResults.add(validateStringRepresentsNumber(wd.getPageNumber().trim()));
 		testResults.add(validateStringRepresentsNumber(wd.getParentBookNumber().trim()));
 		testResults.add(validateStringRepresentsNumber(wd.getParentPageNumber().trim()));
-		testResults.add(validateStringRepresentsNumber(wd.getYearSold().trim()));
-		testResults.add(validateStringRepresentsNumber(wd.getYearBought().trim()));
+		if(!wd.getYearSold().isEmpty()) {
+			testResults.add(validateStringRepresentsNumber(wd.getYearSold().trim()));
+		}
+		if(!wd.getYearBought().isEmpty()) {			
+			testResults.add(validateStringRepresentsNumber(wd.getYearBought().trim()));
+		}
 		testResults.add(validateYears(wd.getYearSold().trim()));
 		testResults.add(validateYears(wd.getYearBought().trim()));
 		for(Boolean value : testResults) {
