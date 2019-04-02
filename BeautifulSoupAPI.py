@@ -5,6 +5,15 @@ import os
 from bs4 import BeautifulSoup
 from os.path import exists
 
+# Example Input 1: t 0 0 imageDir pdf 0 18 18 0
+# Example Input 2: w 0 0 imageDir tiff 0 john tinnell 1
+# Argument descriptions:
+# ['t' for trust deed or 'w' for warrranty deed] ['0' for Tennessee] ['0' for Humphreys county]
+# ['example_directory' for images] ['pdf' or 'tiff' for file type] ['0' for post-1993 or '1' for pre-1993]
+# ['bookNum' if searching by book or 'firstName' if searching by name]
+# ['pageNum' if searching by book or 'lastName' if searching by name]
+# ['0' if searching by book or '1' if searching by name]
+
 website = "https://www.titlesearcher.com/"
 
 class TitleSearcher:
@@ -80,12 +89,35 @@ class TitleSearcher:
                     tortee = "TOR"
                 else:
                     tortee = "TEE"
+                    if ((bookType == '1968-1978td') | (bookType == '1979-1993td') | (bookType == 'gbi')):
+                        break
+                if ((bookType == '1810-1940') | (bookType == 'gbi')):
+                    if (lastName[0:2].lower() == 'mc'):
+                        charSearch = lastName[0:2].lower()
+                if ((bookType == 'gbi') & (charSearch == 'x')):
+                    break
+                elif ((bookType == '1940-1994') | (bookType == '1968-1978td') | (bookType == '1979-1993td')):
+                    if (charSearch == 'a' | charSearch == 'b'):
+                        charSearch = 'A-B'
+                    elif (charSearch == 'c' | charSearch == 'd'):
+                        charSearch = 'C-D'
+                    elif (charSearch == 'e' | charSearch == 'f' | charSearch == 'g'):
+                        charSearch = 'E-G'
+                    elif (charSearch == 'i' | charSearch == 'j' | charSearch == 'k'):
+                        charSearch = 'I-K'
+                    elif (charSearch == 'n' | charSearch == 'o' | charSearch == 'p' | charSearch == 'q'):
+                        charSearch = 'N-Q'
+                    elif (charSearch == 't' | charSearch == 'u' | charSearch == 'v'):
+                        charSearch = 'T-V'
+                    elif (charSearch == 'w' | charSearch == 'x' | charSearch == 'y' | charSearch == 'z'):
+                        charSearch = 'W-Z'
+
                 p = s.post(website + str(bookSearch), data={
                     "datekey": bookType,
-                    "path": charSearch, #TODO: make sure name is searchable, i.e. T for 1810-1940
+                    "path": charSearch,
                     "bookpath": "0001",
                     "tortee": tortee,
-                    "chars": charSearch, #TODO: make sure name is searchable
+                    "chars": charSearch,
                     "state": "tn",
                     "county": "humphreys"
                 })
@@ -203,14 +235,19 @@ class TitleSearcher:
                             return p
 
     def locateImageURL(self, deedType, soupObject, imageFormat, imageDir, s):
+        counter = 0
         if (self.isDataPreExtracted == '0'):
             if (self.bookNum != None):
                 for br in soupObject.find_all('br'):
                     for td in br.find_all('td'):
                         if (td.text.strip() == deedType):
                             imgDetails = td.find_previous_sibling('td')
-                            imgName = imgDetails.find_all('span')
-                            imgName = imgName[1].text.strip()
+                            #imgName = imgDetails.find_all('span')
+                            #imgName = imgName[1].text.strip()
+                            imgName = "WD" + self.bookNum + "-" + self.pageNum
+                            if (counter != 0):
+                                imgName += ("_" + str(counter))
+                            counter += 1
                             aTag = td.findNext('a')
 
                             while (aTag.has_attr('onclick') != True):
@@ -420,14 +457,6 @@ class TitleSearcher:
 
 def main():
     with requests.Session() as s:
-        # Example Input: t 0 0 imageDir pdf 0 18 18 0
-        # Example Input: w 0 0 imageDir tiff 0 john tinnell 1
-        # w 0 0 imageDir pdf 0 (post 1993) 18 21 0 (search by book and page)
-        # w 0 0 imageDir pdf 0 19 34 0
-        # w 0 0 imageDir pdf 0 (post 1993) john tinnell 1 (search by first and last name)
-        # w 0 0 imageDir pdf 1 (pre 1993) 20 22 0 (search by book and page - only option for pre 1993 non-indexed docs)
-        # w 0 0 imagedir pdf 1 (pre1993) john tinnell 1 (search pre 1993 names in old index books)
-        # Old Index Book Documents are uploaded to Box
         if (not exists('cookies')): # Check if cookies file exists.
             homePage = s.post(website, data={
                 "userName": "auburnTigers",
@@ -441,7 +470,7 @@ def main():
         with open('cookies', 'rb') as f:
             s.cookies.update(pickle.load(f))
 
-        deedArguments = raw_input("Enter the deed arguments with spaces in between each argument. ")
+        deedArguments = raw_input()
         deedArguments = deedArguments.split(" ")
         deedType = deedArguments[0]
         state = deedArguments[1]
