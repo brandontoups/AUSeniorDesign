@@ -23,15 +23,18 @@ public class TitleSearcherAPI {
 	private String pythonPath;
 	private String pythonFile;
 	private BufferedInputStream fileContent = null;
-	private static final int MAXGRANTORS = 10;
-	private static final int MAXGRANTEES = 10;
+	private static final int MAXGRANTORS = 100;
+	private static final int MAXGRANTEES = 100;
+	private static final int MAXDEEDS = 100;
 
 	private TitleSearcherAPI() {
 		//pythonPath = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "WEB-INF" + File.separator + "lib" + File.separator + "python.exe";
 		//pythonPath = "/usr/bin/python";
 		pythonPath = "/Users/minanarayanan/anaconda2/bin/python";
-		pythonFile = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "BeautifulSoupAPI.py";
-		imageDir = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "warrantyDeedPDFs";
+		pythonFile = new File("").getAbsolutePath() + File.separator + "apps";
+		pythonFile += File.separator + "myapp.war" + File.separator + "BeautifulSoupAPI.py";
+		imageDir = new File("").getAbsolutePath() + File.separator + "apps" + File.separator
+		imageDir += "myapp.war" + File.separator + "warrantyDeedPDFs";
 		try {
 			pb = new ProcessBuilder(this.getPythonPath(), this.getPythonFile());
 			pb.redirectErrorStream(true);
@@ -86,13 +89,17 @@ public class TitleSearcherAPI {
 		return fileContent;
 	}
 
-	public WarrantyDeed getPDFWarrantyDeedBookNo(String bookNo, String pageNo, String county, String prePost) {
+	public WarrantyDeed[] getPDFWarrantyDeedfirstNameOrBook(String firstNameOrBook, String lastNameOrPage, String county, String prePost) {
 		// TODO Change hardcoded state and county values - currently, 0 represents TN
 		//			and 0 represents Humphreys county
 		WarrantyDeed wd = new WarrantyDeed();
+		WarrantyDeed[] wdList = new WarrantyDeed[MAXDEEDS];
 		String[] grantorsList = new String[MAXGRANTORS];
 		String[] granteesList = new String[MAXGRANTEES];
-		String command = "w 0 0 " + this.getImageDirectory() + " pdf " + prePost + " " + bookNo + " " + pageNo + " 0\n";
+		String fileName = "WD" + firstNameOrBook + "-" + lastNameOrPage + ".pdf";
+		String command = "w 0 0 " + this.getImageDirectory() + " pdf " + prePost;
+		int listIndex = 0;
+		command += " " + firstNameOrBook + " " + lastNameOrPage + " 0\n";
 		try {
 			String line;
 			if(stdin != null) {
@@ -134,32 +141,35 @@ public class TitleSearcherAPI {
 							granteesIndex += 1;
 						}
 					}
+					wd.setGrantors(grantorsList);
+					wd.setGrantees(granteesList);
+					Path pathToFile = Paths.get(this.getImageDirectory() + File.separator + fileName);
+					if (pathToFile.exists()) {
+						try {
+							byte[] buf = Files.readAllBytes(pathToFile);
+							wd.setPDF(buf);
+							wd.setBookNumber(firstNameOrBook);
+							wd.setPageNumber(lastNameOrPage);
+							wdList[listIndex] = wd;
+							listIndex += 1;
+							fileName = "WD" + firstNameOrBook + "-" + lastNameOrPage + "_" + Integer.toString(listIndex) + ".pdf";
+						} catch (IOException exc) {
+							exc.printStackTrace();
+						}
+					}
+					wd = new WarrantyDeed();
 				}
 			}
-			wd.setGrantors(grantorsList);
-			wd.setGrantees(granteesList);
-
 		} catch (IOException exc) {
 			exc.printStackTrace();
 		}
-		String fileName = "WD" + bookNo + "-" + pageNo + ".pdf";
-		Path pathToFile = Paths.get(this.getImageDirectory() + File.separator + fileName);
-		try {
-			byte[] buf = Files.readAllBytes(pathToFile);
-			wd.setPDF(buf);
-			wd.setBookNumber(bookNo);
-			wd.setPageNumber(pageNo);
-		} catch (IOException exc) {
-			exc.printStackTrace();
-		}
-		return wd;
+		return wdList;
 	}
+
    /*
 	public static void main(String[] args) {
 		TitleSearcherAPI title = TitleSearcherAPI.getInstance();
-		WarrantyDeed wd = title.getPDFWarrantyDeedBookNo("18", "21", "Humphreys", "0");
+		WarrantyDeed wd = title.getPDFWarrantyDeedfirstNameOrBook("18", "21", "Humphreys", "0");
 		System.out.println(wd.getBookNumber());
 	}
    */
-
-}
