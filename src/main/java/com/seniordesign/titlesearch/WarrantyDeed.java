@@ -1,4 +1,7 @@
 package com.seniordesign.titlesearch;
+
+import java.util.List;
+import java.util.ArrayList;
 /*
  * Warranty Deed Class:
  * Holds the data about an individual Warranty Deed
@@ -13,8 +16,8 @@ package com.seniordesign.titlesearch;
 
    private String bookNumber, pageNumber;
    private String parentBookNumber, parentPageNumber;
-   private String[] grantors;
-   private String[] grantees;
+   private List<String> grantors;
+   private List<String> grantees;
    private String transactionDate;
    private String yearBought;
    private String yearSold;
@@ -43,22 +46,22 @@ package com.seniordesign.titlesearch;
    }
 
    // Gets grantor name
-   public String[] getGrantors() {
+   public List<String> getGrantors() {
      return this.grantors;
    }
 
    // Assigns name to grantor
-   public void setGrantors(String[] grantors) {
+   public void setGrantors(List<String> grantors) {
 	   this.grantors = grantors;
    }
 
    // Gets grantee name
-   public String[] getGrantees() {
+   public List<String> getGrantees() {
      return this.grantees;
    }
 
    // Assigns name to grantee
-   public void setGrantees(String[] grantees) {
+   public void setGrantees(List<String> grantees) {
 	   this.grantees = grantees;
    }
 

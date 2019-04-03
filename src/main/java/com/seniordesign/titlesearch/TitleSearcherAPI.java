@@ -11,6 +11,8 @@ import java.io.OutputStream;
 import java.lang.ProcessBuilder;
 import java.util.Scanner;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.ArrayList;
 import com.seniordesign.titlesearch.WarrantyDeed;
 
 public class TitleSearcherAPI {
@@ -23,9 +25,6 @@ public class TitleSearcherAPI {
 	private String pythonPath;
 	private String pythonFile;
 	private BufferedInputStream fileContent = null;
-	private static final int MAXGRANTORS = 100;
-	private static final int MAXGRANTEES = 100;
-	private static final int MAXDEEDS = 100;
 
 	private TitleSearcherAPI() {
 		//pythonPath = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "WEB-INF" + File.separator + "lib" + File.separator + "python.exe";
@@ -33,7 +32,7 @@ public class TitleSearcherAPI {
 		pythonPath = "/Users/minanarayanan/anaconda2/bin/python";
 		pythonFile = new File("").getAbsolutePath() + File.separator + "apps";
 		pythonFile += File.separator + "myapp.war" + File.separator + "BeautifulSoupAPI.py";
-		imageDir = new File("").getAbsolutePath() + File.separator + "apps" + File.separator
+		imageDir = new File("").getAbsolutePath() + File.separator + "apps" + File.separator;
 		imageDir += "myapp.war" + File.separator + "warrantyDeedPDFs";
 		try {
 			pb = new ProcessBuilder(this.getPythonPath(), this.getPythonFile());
@@ -89,22 +88,21 @@ public class TitleSearcherAPI {
 		return fileContent;
 	}
 
-	public WarrantyDeed[] getPDFWarrantyDeedfirstNameOrBook(String firstNameOrBook, String lastNameOrPage, String county, String prePost) {
+	public List<WarrantyDeed> getPDFWarrantyDeed(String firstNameOrBook, String lastNameOrPage, String county, String prePost) {
 		// TODO Change hardcoded state and county values - currently, 0 represents TN
 		//			and 0 represents Humphreys county
 		WarrantyDeed wd = new WarrantyDeed();
-		WarrantyDeed[] wdList = new WarrantyDeed[MAXDEEDS];
-		String[] grantorsList = new String[MAXGRANTORS];
-		String[] granteesList = new String[MAXGRANTEES];
+		List<WarrantyDeed> wdList = new ArrayList<WarrantyDeed>();
+		List<String> grantorsList = new ArrayList<String>();
+		List<String> granteesList = new ArrayList<String>();
 		String fileName = "WD" + firstNameOrBook + "-" + lastNameOrPage + ".pdf";
-		String command = "w 0 0 " + this.getImageDirectory() + " pdf " + prePost;
-		int listIndex = 0;
-		command += " " + firstNameOrBook + " " + lastNameOrPage + " 0\n";
+		String command = "w 0 0 " + this.getImageDirectory() + " pdf " + prePost + " " + firstNameOrBook + " " + lastNameOrPage + " 0\n";
+      int fileCounter = 0;
 		try {
 			String line;
 			if(stdin != null) {
 				stdin.write(command.getBytes());
-				stdin.flush();
+				//stdin.flush();
 				System.out.println(command);
 			}
 			while((in.hasNext()) && (in != null)) {
@@ -116,13 +114,11 @@ public class TitleSearcherAPI {
 				if (line.trim().equals("Grantors:"))
 				{
 					line = in.nextLine();
-					int grantorsIndex = 0;
 					while (!(line.trim().equals("Grantees:")))
 					{
                   if (!(line.trim().isEmpty()))
                   {
-                     grantorsList[grantorsIndex] = line;
-                     grantorsIndex += 1;
+                     grantorsList.add(line);
                   }
 						line = in.nextLine();
 					}
@@ -130,29 +126,29 @@ public class TitleSearcherAPI {
 				if (line.trim().equals("Grantees:"))
 				{
 					line = in.nextLine();
-					granteesList[0] = line;
-					int granteesIndex = 1;
+					granteesList.add(line);
 					while (in.hasNext())
 					{
 						line = in.nextLine();
 						if (!(line.trim().isEmpty()))
 						{
-							granteesList[granteesIndex] = line;
-							granteesIndex += 1;
+							granteesList.add(line);
 						}
 					}
 					wd.setGrantors(grantorsList);
 					wd.setGrantees(granteesList);
-					Path pathToFile = Paths.get(this.getImageDirectory() + File.separator + fileName);
-					if (pathToFile.exists()) {
+		
+               File imgFile = new File(this.getImageDirectory() + File.separator + fileName);
+					if (imgFile.exists()) {
 						try {
+                     Path pathToFile = Paths.get(this.getImageDirectory() + File.separator + fileName);
 							byte[] buf = Files.readAllBytes(pathToFile);
 							wd.setPDF(buf);
 							wd.setBookNumber(firstNameOrBook);
 							wd.setPageNumber(lastNameOrPage);
-							wdList[listIndex] = wd;
-							listIndex += 1;
-							fileName = "WD" + firstNameOrBook + "-" + lastNameOrPage + "_" + Integer.toString(listIndex) + ".pdf";
+							wdList.add(wd);
+							fileCounter += 1;
+							fileName = "WD" + firstNameOrBook + "-" + lastNameOrPage + "_" + Integer.toString(fileCounter) + ".pdf";
 						} catch (IOException exc) {
 							exc.printStackTrace();
 						}
@@ -166,10 +162,9 @@ public class TitleSearcherAPI {
 		return wdList;
 	}
 
-   /*
+
 	public static void main(String[] args) {
 		TitleSearcherAPI title = TitleSearcherAPI.getInstance();
-		WarrantyDeed wd = title.getPDFWarrantyDeedfirstNameOrBook("18", "21", "Humphreys", "0");
-		System.out.println(wd.getBookNumber());
+		List<WarrantyDeed> wd = title.getPDFWarrantyDeed("1", "18", "Humphreys", "0");
 	}
-   */
+}
