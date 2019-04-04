@@ -11,7 +11,7 @@ import com.ibm.watson.developer_cloud.natural_language_understanding.v1.model.An
 // Checks the database for the warrantydeed
 // calls mina's class if it doesn't exist in database
 // populates the WarrantyDeed object from the NLUAPI --> GSON
-// jrg0041@auburn.edu - last updated 3/26/2019 @ 2:49pm
+// jrg0041@auburn.edu - last updated 4/4/2019 @ 4:55pm
 
 public class WarrantyDeedManager {
 	
