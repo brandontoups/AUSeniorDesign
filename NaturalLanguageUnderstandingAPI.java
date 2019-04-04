@@ -17,7 +17,7 @@ import com.ibm.watson.developer_cloud.natural_language_understanding.v1.model.Me
 import com.ibm.watson.developer_cloud.service.security.IamOptions;
 
 // Connects to NLU API, analyzes the WarrantyDeed text for entities, and returns them.
-// JRG - last updated 3/26/2019 @ 2:49pm
+// JRG - last updated 4/4/2019 @ 5:01pm
 public class NaturalLanguageUnderstandingAPI {
 
 	// Variables integral to functionality of NLU service
