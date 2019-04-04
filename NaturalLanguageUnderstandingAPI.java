@@ -23,8 +23,8 @@ public class NaturalLanguageUnderstandingAPI {
 	// Variables integral to functionality of NLU service
 	  private static final String VERSION = "2018-11-16";
 	  private static final String URL = "https://gateway.watsonplatform.net/natural-language-understanding/api/";
-	  private static final String API_KEY = "MM5m2tRKP27m-VNx46MtChMC6Yod9b-u6XL3pFUxAyPV";
-	  private static final String MODEL_NO = "46626a43-827f-44aa-80f3-29db8b1a1d0e";
+	  private static final String API_KEY = "xxx";
+	  private static final String MODEL_NO = "xxx";
 	  public static AnalysisResults json;
 	  public static String[] grantors;
 	  public static String[] grantees;
