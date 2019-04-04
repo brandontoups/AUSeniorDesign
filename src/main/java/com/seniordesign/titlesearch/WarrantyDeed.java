@@ -1,4 +1,3 @@
-package com.seniordesign.titlesearch;
 /*
  * Warranty Deed Class:
  * Holds the data about an individual Warranty Deed
@@ -7,39 +6,64 @@ package com.seniordesign.titlesearch;
  * Obtain JSON Object from NLU-Analyzed text
  * Extract valuable information (Book #, Page #, Names, Price) for getter methods
  * Input corrected values for setter methods
+ * jrg0041@auburn.edu - last updated 4/4/2019 @ 4:55pm
  */
 
  public class WarrantyDeed {
+	 
+	   public static String[] bookNumber;
+	   public static String[] pageNumber;
+	   public static String parentBookNumber;
+	   public static String parentPageNumber;
+	   public static String[] grantors;
+	   public static String[] grantees;
+	   public static String transactionDate;
+	   public static String yearBought;
+	   public static String yearSold;
+	   public static boolean isLatest;
+	   public static String text;
+	   public static byte[] pdf;
+	   public static String id;
+	 
+  // Constructor
+  public WarrantyDeed() {
 
-   private String bookNumber, pageNumber;
-   private String parentBookNumber, parentPageNumber;
-   private String[] grantors;
-   private String[] grantees;
-   private String transactionDate;
-   private String yearBought;
-   private String yearSold;
-   private boolean isLatest = false;
-   private String text;
-   private byte[] pdf;
+	   String bookNumber = "Cannot Find";
+	   String pageNumber = "Cannot Find";
+	   String parentBookNumber = "Cannot Find";
+	   String parentPageNumber = "Cannot Find";
+	   String[] grantors = null;
+	   String[] grantees = null;
+	   String transactionDate = "Cannot Find";
+	   String yearBought = "Cannot Find";
+	   String yearSold = "Cannot Find";
+	   boolean isLatest = false;
+	   String text = "Cannot Find";
+	   byte[] pdf = null;
+	   String id = "Cannot Find";
 
+  }
+	 
    // Gets warranty deed book #
-   public String getBookNumber() {
+   public String[] getBookNumber() {
      return this.bookNumber;
    }
 
    // Assigns warranty deed book #
    public void setBookNumber(String bookNo) {
-	   this.bookNumber = bookNo;
+	   this.bookNumber = bookNumber;
+	   updateID();
    }
 
    // Gets warranty deed page #
-   public String getPageNumber() {
+   public String[] getPageNumber() {
      return this.pageNumber;
    }
 
    // Assigns warranty deed book #
    public void setPageNumber(String pageNo) {
-	   this.pageNumber = pageNo;
+	   this.pageNumber = pageNumber;
+	   updateID();
    }
 
    // Gets grantor name
@@ -111,6 +135,7 @@ package com.seniordesign.titlesearch;
    
    public void setParentBookNumber(String bookNo) {
 	   this.parentBookNumber = bookNo;
+	   updateID();
    }
    
    public String getParentPageNumber() {
@@ -119,6 +144,7 @@ package com.seniordesign.titlesearch;
    
    public void setParentPageNumber(String pageNo) {
 	   this.parentPageNumber = pageNo;
+	   updateID();
    }
    
    public boolean getIsLatest() {
@@ -128,5 +154,14 @@ package com.seniordesign.titlesearch;
    public void setIsLatest(boolean value) {
 	   this.isLatest = value;
    }
+   
+   public String getID() {
+	   return this.id;
+   }
+   
+   public void updateID() {
+	   id = this.bookNumber + "-" + this.pageNumber + "-" + this.parentBookNumber + "-" + this.parentPageNumber;
+   }
+
 
  }
