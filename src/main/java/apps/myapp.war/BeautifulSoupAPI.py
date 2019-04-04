@@ -133,7 +133,7 @@ class TitleSearcher:
                 with open(imageDir + os.sep + 'IndexDirectory.pdf', 'wb') as handle:
                     response = s.get(urlTotal, stream=True)
                     if not response.ok:
-                        print response
+                        print(response)
                     for block in response.iter_content(1024):
                         if not block:
                             break
@@ -164,7 +164,7 @@ class TitleSearcher:
                 with open(imageDir + os.sep + 'IndexPage.pdf', 'wb') as handle:
                     response = s.get(urlTotal, stream=True)
                     if not response.ok:
-                        print response
+                        print(response)
                     for block in response.iter_content(1024):
                         if not block:
                             break
@@ -266,7 +266,7 @@ class TitleSearcher:
                                 with open(imageDir + os.sep + imgName + '.pdf', 'wb') as handle:
                                     response = s.get(urlTotal, stream=True)
                                     if not response.ok:
-                                        print response
+                                        print(response)
                                     for block in response.iter_content(1024):
                                         if not block:
                                             break
@@ -297,7 +297,7 @@ class TitleSearcher:
                             with open(imageDir + os.sep + imgName + '.pdf', 'wb') as handle:
                                 response = s.get(urlTotal, stream=True)
                                 if not response.ok:
-                                    print response
+                                    print(response)
                                 for block in response.iter_content(1024):
                                     if not block:
                                         break
@@ -318,7 +318,7 @@ class TitleSearcher:
                 with open(imageDir + os.sep + deedType + self.bookNum + '-' +  self.pageNum + '.pdf', 'wb') as handle:
                     response = s.get(website + urlBody, stream=True)
                     if not response.ok:
-                        print response
+                        print(response)
                     for block in response.iter_content(1024):
                         if not block:
                             break
@@ -470,7 +470,7 @@ def main():
         with open('cookies', 'rb') as f:
             s.cookies.update(pickle.load(f))
 
-        deedArguments = raw_input()
+        deedArguments = input()
         deedArguments = deedArguments.split(" ")
         deedType = deedArguments[0]
         state = deedArguments[1]

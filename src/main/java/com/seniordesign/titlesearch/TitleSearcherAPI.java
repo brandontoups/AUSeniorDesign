@@ -29,11 +29,9 @@ public class TitleSearcherAPI {
 	private TitleSearcherAPI() {
 		//pythonPath = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "WEB-INF" + File.separator + "lib" + File.separator + "python.exe";
 		//pythonPath = "/usr/bin/python";
-		pythonPath = "/Users/minanarayanan/anaconda2/bin/python";
-		pythonFile = new File("").getAbsolutePath() + File.separator + "apps";
-		pythonFile += File.separator + "myapp.war" + File.separator + "BeautifulSoupAPI.py";
-		imageDir = new File("").getAbsolutePath() + File.separator + "apps" + File.separator;
-		imageDir += "myapp.war" + File.separator + "warrantyDeedPDFs";
+		pythonPath = "/usr/local/opt/python/libexec/bin/python";
+		pythonFile = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "BeautifulSoupAPI.py";
+		imageDir = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "warrantyDeedPDFs";
 		try {
 			pb = new ProcessBuilder(this.getPythonPath(), this.getPythonFile());
 			pb.redirectErrorStream(true);
@@ -102,7 +100,7 @@ public class TitleSearcherAPI {
 			String line;
 			if(stdin != null) {
 				stdin.write(command.getBytes());
-				//stdin.flush();
+				stdin.flush();
 				System.out.println(command);
 			}
 			while((in.hasNext()) && (in != null)) {
@@ -127,7 +125,7 @@ public class TitleSearcherAPI {
 				{
 					line = in.nextLine();
 					granteesList.add(line);
-					while (in.hasNext())
+					while ((in.hasNext()) && (!in.hasNext("Date:")))
 					{
 						line = in.nextLine();
 						if (!(line.trim().isEmpty()))
@@ -162,9 +160,11 @@ public class TitleSearcherAPI {
 		return wdList;
 	}
 
-
+/*
 	public static void main(String[] args) {
 		TitleSearcherAPI title = TitleSearcherAPI.getInstance();
 		List<WarrantyDeed> wd = title.getPDFWarrantyDeed("1", "18", "Humphreys", "0");
 	}
+*/
+
 }
