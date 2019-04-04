@@ -15,8 +15,8 @@ public class NaturalLanguageUnderstandingAPI {
 	  private static final String VERSION = "2018-11-16";
 	  private static final String URL = "https://gateway.watsonplatform.net/natural-language-understanding/api";
 	  private static final String USERNAME = "apikey";
-	  private static final String API_KEY = "r_nvI1YKmNkdn5O9gLI8RDzqoFzrVoq71gqKlDCkDboe";
-	  private static final String MODEL_NO = "b6ac0dd2-42d0-4cfb-b8b9-09080a3df33e";
+	  private static final String API_KEY = "xxx";
+	  private static final String MODEL_NO = "xxx";
 	  public static String json;
 	  private static NaturalLanguageUnderstanding nlu = null;
 
