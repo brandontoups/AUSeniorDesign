@@ -8,19 +8,10 @@ import com.mongodb.MongoClient;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.InsertOneOptions;
 import com.mongodb.client.result.DeleteResult;
-import com.mongodb.client.model.UpdateOptions;
 
 import org.bson.Document;
-import org.bson.types.ObjectId;
 import org.bson.types.Binary;
 import com.mongodb.client.*;
-
-
-import java.io.IOException;
-import java.security.*;
-import java.security.cert.CertificateException;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.SSLContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,7 +72,8 @@ public class MongoDBDatabaseManager implements DatabaseManagerStore{
 			
 			String[] strArray1 = Arrays.copyOf(a, a.length, String[].class);
 			
-			byte[] byteArray = (byte[]) d.get("pdf");
+			Binary byteArrayInBinary = (Binary) d.get("PDF");
+			byte[] byteArray = byteArrayInBinary.getData();
 			
 			wd.setBookNumber(d.getString("bookNumber"));
 			wd.setPageNumber(d.getString("pageNumber"));
@@ -139,8 +131,8 @@ public class MongoDBDatabaseManager implements DatabaseManagerStore{
 		
 		String[] strArray1 = Arrays.copyOf(a, a.length, String[].class);
 		
-		byte[] byteArray = (byte[]) doc.get("pdf");
-		
+		String byteArrayInString = (String) doc.get("pdf");
+		byte[] byteArray = byteArrayInString.getBytes();
 		
 		WarrantyDeed newWarrantyDeed = new WarrantyDeed();
 		newWarrantyDeed.setBookNumber(doc.getString("bookNumber"));

@@ -66,7 +66,8 @@ public class TitleSearchManagerTest extends TestCase {
 		wd.setParentPageNumber("400");
 		wd.setYearBought("1990");
 		wd.setYearSold("2010");
-		assert(getInstance.validateWarrantyDeed(wd) == false);
+		List<String> errors = getInstance.validateWarrantyDeed(wd);
+		assert(!errors.isEmpty());
 		getInstance.resetHouseHistory();
 	}
 	
@@ -79,7 +80,8 @@ public class TitleSearchManagerTest extends TestCase {
 		wd.setParentPageNumber("400");
 		wd.setYearBought("1990");
 		wd.setYearSold("2010");
-		assert(getInstance.validateWarrantyDeed(wd) == false);
+		List<String> errors = getInstance.validateWarrantyDeed(wd);
+		assert(!errors.isEmpty());
 		getInstance.resetHouseHistory();
 	}
 	
@@ -92,7 +94,8 @@ public class TitleSearchManagerTest extends TestCase {
 		wd.setParentPageNumber("400");
 		wd.setYearBought("1990");
 		wd.setYearSold("2010");
-		assert(getInstance.validateWarrantyDeed(wd) == false);
+		List<String> errors = getInstance.validateWarrantyDeed(wd);
+		assert(!errors.isEmpty());
 		getInstance.resetHouseHistory();
 	}
 	
@@ -105,7 +108,8 @@ public class TitleSearchManagerTest extends TestCase {
 		wd.setParentPageNumber("incorrectValue");
 		wd.setYearBought("1990");
 		wd.setYearSold("2010");
-		assert(getInstance.validateWarrantyDeed(wd) == false);
+		List<String> errors = getInstance.validateWarrantyDeed(wd);
+		assert(!errors.isEmpty());
 		getInstance.resetHouseHistory();
 	}
 	
@@ -118,7 +122,8 @@ public class TitleSearchManagerTest extends TestCase {
 		wd.setParentPageNumber("400");
 		wd.setYearBought("12309");
 		wd.setYearSold("2010");
-		assert(getInstance.validateWarrantyDeed(wd) == false);
+		List<String> errors = getInstance.validateWarrantyDeed(wd);
+		assert(!errors.isEmpty());
 		getInstance.resetHouseHistory();
 	}
 }

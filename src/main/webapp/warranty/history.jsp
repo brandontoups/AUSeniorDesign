@@ -92,7 +92,10 @@
 			<p>Book: ${pageScope.suggestedBookNumber}</p>
 			<p>Page: ${pageScope.suggestedPageNumber}</p>
 			<div class="d-flex flex-row justify-content-center">
-				<button class="btn btn-primary btn-lg mx-2" name="next" type="submit" <c:if test="${history.size() == 0}">disabled</c:if>>Next Warranty Deed</button>
+				<button class="btn btn-primary btn-lg mx-2" name="next" type="submit" 
+					<c:if test="${history.size() == 0 || pageScope.suggestedBookNumber.isEmpty() || pageScope.suggestedPageNumber.isEmpty()}">disabled</c:if>>
+					Next Warranty Deed
+				</button>
 				<button class="btn btn-success btn-lg mx-2" name="complete" type="submit" <c:if test="${pageScope.historyLength < 40}">disabled</c:if>>History Complete</button>
 			</div>
 			<input type="hidden" name="action" value="getNextWD" />
