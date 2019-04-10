@@ -11,8 +11,8 @@
 
  public class WarrantyDeed {
 	 
-	   public static String[] bookNumber;
-	   public static String[] pageNumber;
+	   public static String bookNumber;
+	   public static String pageNumber;
 	   public static String parentBookNumber;
 	   public static String parentPageNumber;
 	   public static String[] grantors;
@@ -45,7 +45,7 @@
   }
 	 
    // Gets warranty deed book #
-   public String[] getBookNumber() {
+   public String getBookNumber() {
      return this.bookNumber;
    }
 
@@ -56,7 +56,7 @@
    }
 
    // Gets warranty deed page #
-   public String[] getPageNumber() {
+   public String getPageNumber() {
      return this.pageNumber;
    }
 
