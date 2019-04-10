@@ -15,8 +15,8 @@ import com.ibm.watson.developer_cloud.natural_language_understanding.v1.model.An
 
 public class WarrantyDeedManager {
 	
-   private String[] bookNumber;
-   private String[] pageNumber;
+   private String bookNumber;
+   private String pageNumber;
    private String parentBookNumber, parentPageNumber;
    private String[] grantors;
    private String[] grantees;
@@ -122,10 +122,10 @@ public class WarrantyDeedManager {
 	List<String> pageNumbersND = new ArrayList(tempPageNumbersSet);
 
 	// fills arrays for grantors, grantees, bookNumbers, pageNumbers, etc
-	wd.grantors = grantorsND.toArray(new String[grantorsND.size()]);
-	wd.grantees = granteesND.toArray(new String[granteesND.size()]);
-	wd.bookNumber = bookNumbersND.toArray(new String[bookNumbersND.size()]);
-	wd.pageNumber = pageNumbersND.toArray(new String[pageNumbersND.size()]);
+	wd.setGrantors(grantorsND.toArray(new String[grantorsND.size()]));
+	wd.setGrantees(granteesND.toArray(new String[granteesND.size()]));
+	wd.setBookNumber(bookNumbersND.get(bookNumbersND.size() - 1));
+	wd.setPageNumber(pageNumbersND.get(bookNumbersND.size() + 1));
 
 
 
