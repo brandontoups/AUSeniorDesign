@@ -129,7 +129,6 @@ class TitleSearcher:
                                 iFrame = div.findNext('iframe')
                 urlBody = iFrame['src']
                 urlTotal = website + urlBody
-
                 with open(imageDir + os.sep + 'IndexDirectory.pdf', 'wb') as handle:
                     response = s.get(urlTotal, stream=True)
                     if not response.ok:
@@ -161,6 +160,7 @@ class TitleSearcher:
 
                 urlBody = iFrame['src']
                 urlTotal = website + urlBody
+
                 with open(imageDir + os.sep + 'IndexPage.pdf', 'wb') as handle:
                     response = s.get(urlTotal, stream=True)
                     if not response.ok:
@@ -234,7 +234,19 @@ class TitleSearcher:
                                       min + '&schema=&previoussite=deedhold.php')
                             return p
 
+    def writeImgToDirectory(self, imageDir, imgName, deed, s, urlTotal):
+        with open(imageDir + os.sep + imgName + '.pdf', 'wb') as handle:
+                response = s.get(urlTotal, stream=True)
+                deed["pdf"] = response.content
+                if not response.ok:
+                    print response
+                for block in response.iter_content(1024):
+                    if not block:
+                        break
+                    handle.write(block)
+
     def locateImageURL(self, deedType, soupObject, imageFormat, imageDir, s):
+        deed = {}
         counter = 0
         if (self.isDataPreExtracted == '0'):
             if (self.bookNum != None):
@@ -263,14 +275,8 @@ class TitleSearcher:
                                     urlTotal += '&imgtype=tiff'
                                 elif (imageFormat.upper() == 'PDF'):
                                     urlTotal += '&imgtype=pdf'
-                                with open(imageDir + os.sep + imgName + '.pdf', 'wb') as handle:
-                                    response = s.get(urlTotal, stream=True)
-                                    if not response.ok:
-                                        print response
-                                    for block in response.iter_content(1024):
-                                        if not block:
-                                            break
-                                        handle.write(block)
+                                writeImgToDirectory(imageDir, imgName, deed, s, urlTotal)
+
             else:
                 #How to distinguish between people when searching by name without additional discerning info?
                 #This implementation simply fetches all deeds on the page without selecting a person
@@ -294,16 +300,9 @@ class TitleSearcher:
                                 urlTotal += '&imgtype=tiff'
                             elif (imageFormat.upper() == 'PDF'):
                                 urlTotal += '&imgtype=pdf'
-                            with open(imageDir + os.sep + imgName + '.pdf', 'wb') as handle:
-                                response = s.get(urlTotal, stream=True)
-                                if not response.ok:
-                                    print response
-                                for block in response.iter_content(1024):
-                                    if not block:
-                                        break
-                                    handle.write(block)
+                            writeImgToDirectory(imageDir, imgName, deed, s, urlTotal)
 
-        elif (self.isDataPreExtracted == '1'):
+        elif (self.isDataPreExtracted == '1'): #Deeds are from before
             for td in soupObject.find_all('td'):
                 for iframe in td.find_all('iframe'):
                     newWindow = iframe['src']
@@ -315,17 +314,17 @@ class TitleSearcher:
 
             for frame in soup.find_all('frame'):
                 urlBody = frame['src']
-                with open(imageDir + os.sep + deedType + self.bookNum + '-' +  self.pageNum + '.pdf', 'wb') as handle:
-                    response = s.get(website + urlBody, stream=True)
-                    if not response.ok:
-                        print response
-                    for block in response.iter_content(1024):
-                        if not block:
-                            break
-                        handle.write(block)
+                writeImgToDirectory(imageDir, deedType + self.bookNum + '-' +  self.pageNum, deed, s, website + urlBody)
                 break
+        if (self.bookNum != None):
+            deed["firstArg"] = self.bookNum
+            deed["secondArg"] = self.pageNum
+        else:
+            deed["firstArg"] = self.firstName
+            deed["secondArg"] = self.lastName
+        return deed
 
-    def locateDetails(self, deedType, soupObject, s): #TODO: Modify to include cross references
+    def locateDetails(self, deedType, soupObject, s, deed): #TODO: Modify to include cross references
         propInfo = {}
         for br in soupObject.find_all('br'):
             for td in br.find_all('td'):
@@ -342,6 +341,7 @@ class TitleSearcher:
                         for td_2 in soup.find_all('td'):
                             if (td_2.text.strip()[0:9] == 'File Date'):
                                 propInfo['date'] = td_2.text.strip().split(':')[1]
+                                deed["date"] = td_2.text.strip().split(':')[1]
                                 print('Date: ')
                                 print(propInfo['date'])
                                 propInfoCounter += 1
@@ -371,10 +371,12 @@ class TitleSearcher:
                                 td_2 = td_2.findNext('td')
                                 td_2 = td_2.findNext('td')
                                 propInfo['grantors'] = td_2.text.strip()
+                                deeds["grantors"] = td_2.text.strip()
                                 print('Grantors: ')
                                 print(propInfo['grantors'])
                                 td_2 = td_2.findNext('td')
                                 propInfo['grantees'] = td_2.text.strip()
+                                deeds["grantees"] = td_2.text.strip()
                                 print('Grantees: ')
                                 print(propInfo['grantees'])
                                 break
@@ -441,13 +443,15 @@ class TitleSearcher:
 
     def GetWarrantyDeed(self, imageDir, imageFormat, p, s):
         soup = BeautifulSoup(p.text, 'html.parser')
-        self.locateImageURL('WD', soup, imageFormat, imageDir, s)
-        details = self.locateDetails('WD', soup, s)
+        wd = self.locateImageURL('WD', soup, imageFormat, imageDir, s)
+        details = self.locateDetails('WD', soup, s, wd)
+        return wd
 
     def GetTrustDeed(self, imageDir, imageFormat, p, s):
         soup = BeautifulSoup(p.text, 'html.parser')
-        self.locateImageURL('TD', soup, imageFormat, imageDir, s)
-        details = self.locateDetails('TD', soup, s)
+        td = self.locateImageURL('TD', soup, imageFormat, imageDir, s)
+        details = self.locateDetails('TD', soup, s, td)
+        return td
 
     def GetTrustDeedByName():
         pass
@@ -494,11 +498,10 @@ def main():
             print('Property document not found. ')
         else:
             if ((deedType == 't') & (isDataPreExtracted != 1) & (pageOrName != 1)):
-                TitleSearch.GetTrustDeed(imageDir, imageFormat, p, s)
+                deed = TitleSearch.GetTrustDeed(imageDir, imageFormat, p, s)
             elif ((deedType == 'w') & (isDataPreExtracted != 1) & (pageOrName != 1)):
-                TitleSearch.GetWarrantyDeed(imageDir, imageFormat, p, s)
-
-
+                deed = TitleSearch.GetWarrantyDeed(imageDir, imageFormat, p, s)
+        return deed
 
 if __name__ == "__main__":
     main()
