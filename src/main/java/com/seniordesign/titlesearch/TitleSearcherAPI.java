@@ -13,6 +13,8 @@ import java.util.Scanner;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.ArrayList;
+import org.python.util.PythonInterpreter;
+import org.python.core.PyObject;
 import com.seniordesign.titlesearch.WarrantyDeed;
 
 public class TitleSearcherAPI {
@@ -32,6 +34,7 @@ public class TitleSearcherAPI {
 		pythonPath = "/usr/local/opt/python/libexec/bin/python";
 		pythonFile = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "BeautifulSoupAPI.py";
 		imageDir = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "warrantyDeedPDFs";
+
 		try {
 			pb = new ProcessBuilder(this.getPythonPath(), this.getPythonFile());
 			pb.redirectErrorStream(true);
@@ -89,6 +92,25 @@ public class TitleSearcherAPI {
 	public List<WarrantyDeed> getPDFWarrantyDeed(String firstNameOrBook, String lastNameOrPage, String county, String prePost) {
 		// TODO Change hardcoded state and county values - currently, 0 represents TN
 		//			and 0 represents Humphreys county
+
+		String[] arguments = {this.getPythonFile(), "w", "0", "0", this.getImageDirectory(), "pdf", prePost, firstNameOrBook, lastNameOrPage, "0"};
+		PythonInterpreter.initialize(System.getProperties(), System.getProperties(), arguments);
+		PythonInterpreter python = new PythonInterpreter();
+		List<WarrantyDeed> wdList = new ArrayList<WarrantyDeed>(); 
+		try {
+			PyObject deeds = python.eval(this.getPythonFile());
+			for (PyDictionary deed : deeds.asIterable()) {
+				WarrantyDeed wd = new WarrantyDeed();
+				wd.setGrantors(deed.get("grantors"));
+				wd.setGrantees(deed.get("grantees"));
+				wd.setTransactionDate(deed.get("date"));
+				wd.setPDF(deed.get("pdf"));
+				wd.setBookNumber(deed.get("firstArg"));
+				wd.setPageNumber(deed.get("secondArg"));
+				wdList.add(wd);
+			}
+
+		/*
 		WarrantyDeed wd = new WarrantyDeed();
 		List<WarrantyDeed> wdList = new ArrayList<WarrantyDeed>();
 		List<String> grantorsList = new ArrayList<String>();
@@ -135,7 +157,7 @@ public class TitleSearcherAPI {
 					}
 					wd.setGrantors(grantorsList);
 					wd.setGrantees(granteesList);
-		
+
                File imgFile = new File(this.getImageDirectory() + File.separator + fileName);
 					if (imgFile.exists()) {
 						try {
@@ -154,6 +176,7 @@ public class TitleSearcherAPI {
 					wd = new WarrantyDeed();
 				}
 			}
+			*/
 		} catch (IOException exc) {
 			exc.printStackTrace();
 		}
