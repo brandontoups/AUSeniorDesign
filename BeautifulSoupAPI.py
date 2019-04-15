@@ -2,6 +2,7 @@ import requests
 import pickle
 import sys
 import os
+import re
 from bs4 import BeautifulSoup
 from os.path import exists
 
@@ -132,7 +133,7 @@ class TitleSearcher:
                 with open(imageDir + os.sep + 'IndexDirectory.pdf', 'wb') as handle:
                     response = s.get(urlTotal, stream=True)
                     if not response.ok:
-                        print response
+                        print(response)
                     for block in response.iter_content(1024):
                         if not block:
                             break
@@ -164,7 +165,7 @@ class TitleSearcher:
                 with open(imageDir + os.sep + 'IndexPage.pdf', 'wb') as handle:
                     response = s.get(urlTotal, stream=True)
                     if not response.ok:
-                        print response
+                        print(response)
                     for block in response.iter_content(1024):
                         if not block:
                             break
@@ -234,25 +235,33 @@ class TitleSearcher:
                                       min + '&schema=&previoussite=deedhold.php')
                             return p
 
-    def writeImgToDirectory(self, imageDir, imgName, deed, s, urlTotal):
+    def writeImgToDirectory(self, imageDir, imgName, deed, s, urlTotal, deedList):
         with open(imageDir + os.sep + imgName + '.pdf', 'wb') as handle:
                 response = s.get(urlTotal, stream=True)
                 deed["pdf"] = response.content
+                if (self.bookNum != None):
+                    deed["firstArg"] = self.bookNum
+                    deed["secondArg"] = self.pageNum
+                else:
+                    deed["firstArg"] = self.firstName
+                    deed["secondArg"] = self.lastName
+                deedList.append(deed)
                 if not response.ok:
-                    print response
+                    print(response)
                 for block in response.iter_content(1024):
                     if not block:
                         break
                     handle.write(block)
 
     def locateImageURL(self, deedType, soupObject, imageFormat, imageDir, s):
-        deed = {}
+        deedList = []
         counter = 0
         if (self.isDataPreExtracted == '0'):
             if (self.bookNum != None):
                 for br in soupObject.find_all('br'):
                     for td in br.find_all('td'):
                         if (td.text.strip() == deedType):
+                            deed = {}
                             imgDetails = td.find_previous_sibling('td')
                             #imgName = imgDetails.find_all('span')
                             #imgName = imgName[1].text.strip()
@@ -275,7 +284,7 @@ class TitleSearcher:
                                     urlTotal += '&imgtype=tiff'
                                 elif (imageFormat.upper() == 'PDF'):
                                     urlTotal += '&imgtype=pdf'
-                                writeImgToDirectory(imageDir, imgName, deed, s, urlTotal)
+                                self.writeImgToDirectory(imageDir, imgName, deed, s, urlTotal, deedList)
 
             else:
                 #How to distinguish between people when searching by name without additional discerning info?
@@ -293,6 +302,7 @@ class TitleSearcher:
 
                         onclick = aTag.get('onclick')
                         if (onclick[0:4] == 'java'):
+                            deed = {}
                             onclickList = onclick.split("\"")
                             urlBody = onclickList[1]
                             urlTotal = website + 'imgview.php?' + urlBody
@@ -300,7 +310,7 @@ class TitleSearcher:
                                 urlTotal += '&imgtype=tiff'
                             elif (imageFormat.upper() == 'PDF'):
                                 urlTotal += '&imgtype=pdf'
-                            writeImgToDirectory(imageDir, imgName, deed, s, urlTotal)
+                            self.writeImgToDirectory(imageDir, imgName, deed, s, urlTotal, deedList)
 
         elif (self.isDataPreExtracted == '1'): #Deeds are from before
             for td in soupObject.find_all('td'):
@@ -313,19 +323,15 @@ class TitleSearcher:
             soup = BeautifulSoup(p.text, 'html.parser')
 
             for frame in soup.find_all('frame'):
+                deed = {}
                 urlBody = frame['src']
-                writeImgToDirectory(imageDir, deedType + self.bookNum + '-' +  self.pageNum, deed, s, website + urlBody)
+                self.writeImgToDirectory(imageDir, deedType + self.bookNum + '-' +  self.pageNum, deed, s, website + urlBody, deedList)
                 break
-        if (self.bookNum != None):
-            deed["firstArg"] = self.bookNum
-            deed["secondArg"] = self.pageNum
-        else:
-            deed["firstArg"] = self.firstName
-            deed["secondArg"] = self.lastName
-        return deed
+        return deedList
 
-    def locateDetails(self, deedType, soupObject, s, deed): #TODO: Modify to include cross references
+    def locateDetails(self, deedType, soupObject, s, deedList): #TODO: Modify to include cross references
         propInfo = {}
+        deedCounter = 0
         for br in soupObject.find_all('br'):
             for td in br.find_all('td'):
                 if (td.text.strip() == deedType):
@@ -341,7 +347,7 @@ class TitleSearcher:
                         for td_2 in soup.find_all('td'):
                             if (td_2.text.strip()[0:9] == 'File Date'):
                                 propInfo['date'] = td_2.text.strip().split(':')[1]
-                                deed["date"] = td_2.text.strip().split(':')[1]
+                                deedList[deedCounter]["date"] = td_2.text.strip().split(':')[1]
                                 print('Date: ')
                                 print(propInfo['date'])
                                 propInfoCounter += 1
@@ -371,15 +377,16 @@ class TitleSearcher:
                                 td_2 = td_2.findNext('td')
                                 td_2 = td_2.findNext('td')
                                 propInfo['grantors'] = td_2.text.strip()
-                                deeds["grantors"] = td_2.text.strip()
+                                deedList[deedCounter]["grantors"] = re.split(r'\s{2,}', td_2.text.strip())
                                 print('Grantors: ')
                                 print(propInfo['grantors'])
                                 td_2 = td_2.findNext('td')
                                 propInfo['grantees'] = td_2.text.strip()
-                                deeds["grantees"] = td_2.text.strip()
+                                deedList[deedCounter]["grantees"] = re.split(r'\s{2,}', td_2.text.strip())
                                 print('Grantees: ')
                                 print(propInfo['grantees'])
                                 break
+                        deedCounter += 1
         return propInfo
 
     def navigateToSearchPage(self, s, imageDir):
@@ -474,7 +481,7 @@ def main():
         with open('cookies', 'rb') as f:
             s.cookies.update(pickle.load(f))
 
-        deedArguments = raw_input()
+        deedArguments = input()
         deedArguments = deedArguments.split(" ")
         deedType = deedArguments[0]
         state = deedArguments[1]
