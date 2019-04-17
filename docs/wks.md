@@ -7,7 +7,7 @@ Watson Knowledge Studio allows application of a machine learning model to a Natu
 The process of training Watson Knowledge Studio is outlined in this section. The process starts with titlesearcher.com. The TitleSearcherAPI is used to access and bulk download a set of warranty deeds in PDF format. These are the deeds that Watson Knowledge Studio will be trained on. This is outlined in [document-extraction.md](document-extraction.md). Document extraction needs to be done before anything related to Watson Knowledge Studio. 
 
 ## Turning the .pdf into .txt
-The next issue is in parsing out the text of these documents. Since they are scanned PDF pages, they must be passed into IBM Discovery via our custom titlesearch.mybluemix.net/upload.jsp. The "No file chosen" message will return once the document has been successfully passed into Discovery.
+The next issue is in parsing out the text of these documents. Since they are scanned PDF pages, they must be passed into IBM Discovery via our custom titlesearch.mybluemix.net/upload.jsp. The process for pushing upload.jsp live is outlined [here](discovery.md). When uploading, the "No file chosen" message will return once the document has been successfully passed to Discovery.
 
 Once a document is uploaded into Discovery, it will be placed in a queue for transforming into a .txt format. Users may need to wait for the queue to finish processing before proceeding to the next step. 
 
@@ -54,7 +54,7 @@ Once you finish all annotation tasks, in the ```Performance``` tab, train the mo
 Go to the ```Version``` tab and click ```Create Version```. Now click ```Deploy``` and deploy this model to a previously created NLU service. This NLU service is the one you will be interfacing with directly. 
 
 ## Saving Progress and/or Migrating to a New WKS Instance 
-Do not go too long without downloading the Corpus and Type System (and trained model if on paid plan) to your system. Also, keep them under version control or email them to yourself for any doomsday scenarios (e.g., deleting the WKS instance you had been training for the entire semester and not sleeping for a few days until you are caught back up).
+Do not go too long without downloading the Corpus and Type System (and trained model if on paid plan) to your system. Also, keep them under version control or email them to yourself for any doomsday scenarios (e.g., accidentally deleting the WKS instance you had been training for the entire semester).
 
 ## Extracting Entities
 Test the entity extraction. If you would like to test the NLU, you can do so in this /docs/ directory. You can find the  test files: [test.java](testNLU/test.java) and [nluAPI.java](testNLU/nluAPI.java) in the [testNLU](testNLU/) directory. These are pared down versions of the fully-implemented NLU files for testing purposes. The ```nluAPI.java``` is derived from the [Watson Developer Cloud Java SDK](https://github.com/watson-developer-cloud/java-sdk/tree/master/natural-language-understanding). 
