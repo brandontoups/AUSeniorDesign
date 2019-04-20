@@ -13,8 +13,11 @@ import java.util.Scanner;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Properties;
 import org.python.util.PythonInterpreter;
 import org.python.core.PyObject;
+import org.python.core.PyString;
+import org.python.core.PyDictionary;
 import com.seniordesign.titlesearch.WarrantyDeed;
 
 public class TitleSearcherAPI {
@@ -31,7 +34,8 @@ public class TitleSearcherAPI {
 	private TitleSearcherAPI() {
 		//pythonPath = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "WEB-INF" + File.separator + "lib" + File.separator + "python.exe";
 		//pythonPath = "/usr/bin/python";
-		pythonPath = "/usr/local/opt/python/libexec/bin/python";
+		//pythonPath = "/usr/local/opt/python/libexec/bin/python";
+      pythonPath = "/Users/minanarayanan/anaconda2/bin/python";
 		pythonFile = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "BeautifulSoupAPI.py";
 		imageDir = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "warrantyDeedPDFs";
 
@@ -92,92 +96,36 @@ public class TitleSearcherAPI {
 	public List<WarrantyDeed> getPDFWarrantyDeed(String firstNameOrBook, String lastNameOrPage, String county, String prePost) {
 		// TODO Change hardcoded state and county values - currently, 0 represents TN
 		//			and 0 represents Humphreys county
-
-		String[] arguments = {this.getPythonFile(), "w", "0", "0", this.getImageDirectory(), "pdf", prePost, firstNameOrBook, lastNameOrPage, "0"};
-		PythonInterpreter.initialize(System.getProperties(), System.getProperties(), arguments);
+		Properties properties = System.getProperties();
+      properties.put("python.path", this.getPythonPath());
+      PythonInterpreter.initialize(System.getProperties(), properties, new String[0]);
 		PythonInterpreter python = new PythonInterpreter();
-		List<WarrantyDeed> wdList = new ArrayList<WarrantyDeed>(); 
+		List<WarrantyDeed> wdList = new ArrayList<WarrantyDeed>();
 		try {
-			PyObject deeds = python.eval(this.getPythonFile());
-			for (PyDictionary deed : deeds.asIterable()) {
+			//python.execfile("BeautifulSoupAPI.py"); 
+         python.execfile(this.getPythonFile()); 
+         PyObject exec = python.get("execute");
+         PyObject[] args = {new PyString("w"), new PyString("0"), new PyString("0"), new PyString(this.getImageDirectory()), new PyString("pdf"), new PyString(prePost), new PyString(firstNameOrBook), new PyString(lastNameOrPage), new PyString("0")};
+         PyObject deeds = exec.__call__(args);
+         for (PyObject deed : deeds.asIterable()) {
 				WarrantyDeed wd = new WarrantyDeed();
-				wd.setGrantors(deed.get("grantors"));
-				wd.setGrantees(deed.get("grantees"));
-				wd.setTransactionDate(deed.get("date"));
-				wd.setPDF(deed.get("pdf"));
-				wd.setBookNumber(deed.get("firstArg"));
-				wd.setPageNumber(deed.get("secondArg"));
+            PyDictionary deed2 = (PyDictionary) deed;
+            List<String> grantors = (List<String>) deed2.get("grantors");
+				wd.setGrantors(grantors);
+            List<String> grantees = (List<String>) deed2.get("grantees");
+				wd.setGrantees(grantees);
+            String date = (String) deed2.get("date");
+				wd.setTransactionDate(date);
+            String pdf = (String) deed2.get("pdf");
+            byte[] pdf_1 = pdf.getBytes();
+				wd.setPDF(pdf_1);
+            String firstArg = (String) deed2.get("firstArg");
+				wd.setBookNumber(firstArg);
+            String secondArg = (String) deed2.get("secondArg");
+				wd.setPageNumber(secondArg);
 				wdList.add(wd);
 			}
-
-		/*
-		WarrantyDeed wd = new WarrantyDeed();
-		List<WarrantyDeed> wdList = new ArrayList<WarrantyDeed>();
-		List<String> grantorsList = new ArrayList<String>();
-		List<String> granteesList = new ArrayList<String>();
-		String fileName = "WD" + firstNameOrBook + "-" + lastNameOrPage + ".pdf";
-		String command = "w 0 0 " + this.getImageDirectory() + " pdf " + prePost + " " + firstNameOrBook + " " + lastNameOrPage + " 0\n";
-      int fileCounter = 0;
-		try {
-			String line;
-			if(stdin != null) {
-				stdin.write(command.getBytes());
-				stdin.flush();
-				System.out.println(command);
-			}
-			while((in.hasNext()) && (in != null)) {
-				line = in.nextLine();
-				if (line.trim().equals("Date:"))
-				{
-					wd.setTransactionDate(in.nextLine());
-				}
-				if (line.trim().equals("Grantors:"))
-				{
-					line = in.nextLine();
-					while (!(line.trim().equals("Grantees:")))
-					{
-                  if (!(line.trim().isEmpty()))
-                  {
-                     grantorsList.add(line);
-                  }
-						line = in.nextLine();
-					}
-				}
-				if (line.trim().equals("Grantees:"))
-				{
-					line = in.nextLine();
-					granteesList.add(line);
-					while ((in.hasNext()) && (!in.hasNext("Date:")))
-					{
-						line = in.nextLine();
-						if (!(line.trim().isEmpty()))
-						{
-							granteesList.add(line);
-						}
-					}
-					wd.setGrantors(grantorsList);
-					wd.setGrantees(granteesList);
-
-               File imgFile = new File(this.getImageDirectory() + File.separator + fileName);
-					if (imgFile.exists()) {
-						try {
-                     Path pathToFile = Paths.get(this.getImageDirectory() + File.separator + fileName);
-							byte[] buf = Files.readAllBytes(pathToFile);
-							wd.setPDF(buf);
-							wd.setBookNumber(firstNameOrBook);
-							wd.setPageNumber(lastNameOrPage);
-							wdList.add(wd);
-							fileCounter += 1;
-							fileName = "WD" + firstNameOrBook + "-" + lastNameOrPage + "_" + Integer.toString(fileCounter) + ".pdf";
-						} catch (IOException exc) {
-							exc.printStackTrace();
-						}
-					}
-					wd = new WarrantyDeed();
-				}
-			}
-			*/
-		} catch (IOException exc) {
+		} catch (Exception exc) {
 			exc.printStackTrace();
 		}
 		return wdList;
