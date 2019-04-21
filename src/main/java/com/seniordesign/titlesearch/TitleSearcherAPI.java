@@ -7,20 +7,18 @@ import java.nio.file.Path;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.ProcessBuilder;
-import java.util.Scanner;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Properties;
+import org.python.util.PythonInterpreter;
+import org.python.core.PyObject;
+import org.python.core.PyString;
+import org.python.core.PyDictionary;
 import com.seniordesign.titlesearch.WarrantyDeed;
 
 public class TitleSearcherAPI {
 	private static TitleSearcherAPI singleInstance = null;
-	private static ProcessBuilder pb = null;
-	private static Process process;
-	private static Scanner in;
-	private static OutputStream stdin;
 	private String imageDir;
 	private String pythonPath;
 	private String pythonFile;
@@ -29,19 +27,18 @@ public class TitleSearcherAPI {
 	private TitleSearcherAPI() {
 		//pythonPath = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "WEB-INF" + File.separator + "lib" + File.separator + "python.exe";
 		//pythonPath = "/usr/bin/python";
-		pythonPath = "/usr/local/opt/python/libexec/bin/python";
+		//pythonPath = "C:\\Python27\\python";
+		//pythonPath = "/usr/local/opt/python/libexec/bin/python";
+		//pythonPath = "/Users/minanarayanan/anaconda2/bin/python";
 		pythonFile = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "BeautifulSoupAPI.py";
 		imageDir = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "warrantyDeedPDFs";
-		try {
-			pb = new ProcessBuilder(this.getPythonPath(), this.getPythonFile());
-			pb.redirectErrorStream(true);
-			process = pb.start();
-			in = new Scanner(process.getInputStream());
-			stdin = process.getOutputStream();
-		} catch (IOException exc) {
-			exc.printStackTrace();
-		}
-		System.out.println(pythonPath);
+		
+		Properties properties = System.getProperties();
+		//properties.setProperty("python.home", "C:\\liberty\\usr\\servers\\defaultServer\\apps\\myapp.war\\WEB-INF\\lib\\jython-standalone-2.7.1.jar");
+		properties.setProperty("python.home", "/home/vcap/app/wlp/usr/servers/defaultServer/apps/myapp.war/WEB-INF/lib/jython-standalone-2.7.1.jar");
+		//properties.setProperty("python.path", "C:\\Users\\Jaypt\\eclipse-workspace\\titlesearch\\src\\main\\webapp\\WEB-INF\\lib\\site-packages");
+		properties.setProperty("python.path", "/home/vcap/app/wlp/usr/servers/defaultServer/apps/myapp.war/WEB-INF/lib/site-packages");
+		PythonInterpreter.initialize(System.getProperties(), properties, new String[0]);
 	}
 
 	public static TitleSearcherAPI getInstance() {
@@ -89,72 +86,44 @@ public class TitleSearcherAPI {
 	public List<WarrantyDeed> getPDFWarrantyDeed(String firstNameOrBook, String lastNameOrPage, String county, String prePost) {
 		// TODO Change hardcoded state and county values - currently, 0 represents TN
 		//			and 0 represents Humphreys county
-		WarrantyDeed wd = new WarrantyDeed();
+		PythonInterpreter python = new PythonInterpreter();
 		List<WarrantyDeed> wdList = new ArrayList<WarrantyDeed>();
-		List<String> grantorsList = new ArrayList<String>();
-		List<String> granteesList = new ArrayList<String>();
-		String fileName = "WD" + firstNameOrBook + "-" + lastNameOrPage + ".pdf";
-		String command = "w 0 0 " + this.getImageDirectory() + " pdf " + prePost + " " + firstNameOrBook + " " + lastNameOrPage + " 0\n";
-      int fileCounter = 0;
 		try {
-			String line;
-			if(stdin != null) {
-				stdin.write(command.getBytes());
-				stdin.flush();
-				System.out.println(command);
+			//python.execfile("BeautifulSoupAPI.py"); 
+	         python.execfile(this.getPythonFile()); 
+	         PyObject exec = python.get("execute");
+	         PyObject[] args = {new PyString("w"), new PyString("0"), new PyString("0"), new PyString(this.getImageDirectory()), new PyString("pdf"), new PyString(prePost), new PyString(firstNameOrBook), new PyString(lastNameOrPage), new PyString("0")};
+	         PyObject deeds = exec.__call__(args);
+	         for (PyObject deed : deeds.asIterable()) {
+				WarrantyDeed wd = new WarrantyDeed();
+	            PyDictionary deed2 = (PyDictionary) deed;
+	            List<String> grantorsList = (List<String>) deed2.get("grantors");
+	            String[] grantors = new String[grantorsList.size()];
+	            grantorsList.toArray(grantors);
+					wd.setGrantors(grantors);
+	            List<String> granteesList = (List<String>) deed2.get("grantees");
+	            String[] grantees = new String[granteesList.size()];
+	            granteesList.toArray(grantees);
+					wd.setGrantees(grantees);
+	            String date = (String) deed2.get("date");
+					wd.setTransactionDate(date);
+	//            String pdf = (String) deed2.get("pdf");
+	//            System.out.println(deed2.get("pdf").getClass());
+	//            
+	//				wd.setPDF(pdf_1);
+	            String firstArg = (String) deed2.get("firstArg");
+					wd.setBookNumber(firstArg);
+	            String secondArg = (String) deed2.get("secondArg");
+					wd.setPageNumber(secondArg);
+					wdList.add(wd);
+				String fileName = "WD" + firstArg + "-" + secondArg + ".pdf";
+				Path pathToFile = Paths.get(this.getImageDirectory() + File.separator + fileName);
+				byte[] buf = Files.readAllBytes(pathToFile);
+				wd.setPDF(buf);
+				python.cleanup();
+				python.close();
 			}
-			while((in.hasNext()) && (in != null)) {
-				line = in.nextLine();
-				if (line.trim().equals("Date:"))
-				{
-					wd.setTransactionDate(in.nextLine());
-				}
-				if (line.trim().equals("Grantors:"))
-				{
-					line = in.nextLine();
-					while (!(line.trim().equals("Grantees:")))
-					{
-                  if (!(line.trim().isEmpty()))
-                  {
-                     grantorsList.add(line);
-                  }
-						line = in.nextLine();
-					}
-				}
-				if (line.trim().equals("Grantees:"))
-				{
-					line = in.nextLine();
-					granteesList.add(line);
-					while ((in.hasNext()) && (!in.hasNext("Date:")))
-					{
-						line = in.nextLine();
-						if (!(line.trim().isEmpty()))
-						{
-							granteesList.add(line);
-						}
-					}
-					wd.setGrantors((String[]) grantorsList.toArray());
-					wd.setGrantees((String[]) granteesList.toArray());
-		
-               File imgFile = new File(this.getImageDirectory() + File.separator + fileName);
-					if (imgFile.exists()) {
-						try {
-                     Path pathToFile = Paths.get(this.getImageDirectory() + File.separator + fileName);
-							byte[] buf = Files.readAllBytes(pathToFile);
-							wd.setPDF(buf);
-							wd.setBookNumber(firstNameOrBook);
-							wd.setPageNumber(lastNameOrPage);
-							wdList.add(wd);
-							fileCounter += 1;
-							fileName = "WD" + firstNameOrBook + "-" + lastNameOrPage + "_" + Integer.toString(fileCounter) + ".pdf";
-						} catch (IOException exc) {
-							exc.printStackTrace();
-						}
-					}
-					wd = new WarrantyDeed();
-				}
-			}
-		} catch (IOException exc) {
+		} catch (Exception exc) {
 			exc.printStackTrace();
 		}
 		return wdList;

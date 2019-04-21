@@ -27,7 +27,6 @@ public class DatabaseManagerAPI extends Application {
 		
 		//List<String> bookNum = new ArrayList<String>();
 		for (WarrantyDeed deed : store.getAll()) {
-			System.out.println(deed);
 			//We know that we have bookNumber in the parameter, so we first need to get 
 			//the bookNumer from the list and then compare it
 			String bookNumber1 = deed.getBookNumber();

@@ -120,7 +120,7 @@
 				</div>
 				
 				<div class="form-group col ml-2">
-					<object class="form-control" name="pdf" data="/ShowPDF?deed=${index}" type="application/pdf" width="800px" height="900px"></object>
+					<object class="form-control" name="pdf" data="/ShowPDF?deed=${index}&view=history" type="application/pdf" width="800px" height="900px"></object>
 				</div>
 			</div>
 			

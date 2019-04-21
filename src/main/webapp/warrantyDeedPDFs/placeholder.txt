@@ -1,0 +1,1 @@
+Placeholder document so IBM uploads the folder into the server. IBM requires folders to be not empty and this is a workaround to fix that.
