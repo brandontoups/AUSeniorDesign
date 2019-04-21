@@ -501,5 +501,5 @@ def execute(deedType, state, county, imageDir, imageFormat, isDataPreExtracted, 
                 deed = TitleSearch.GetTrustDeed(imageDir, imageFormat, p, s)
             elif ((deedType == 'w') & (isDataPreExtracted != 1) & (pageOrName != 1)):
                 deed = TitleSearch.GetWarrantyDeed(imageDir, imageFormat, p, s)
-        return deed
+            return deed
     s.close()
