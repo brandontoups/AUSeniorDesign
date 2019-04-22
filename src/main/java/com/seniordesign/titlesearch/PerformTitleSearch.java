@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Servlet implementation class PerformTitleSearch
  */
-@WebServlet(name = "/PerformTitleSearch", urlPatterns={"/search", "/warranty/validate", "/warranty/history"})
+@WebServlet(name = "/PerformTitleSearch", urlPatterns={"/search", "/warranty/validate", "/warranty/history", "/warranty/select"})
 @MultipartConfig(fileSizeThreshold = 1024 * 1024 * 10,
 maxFileSize = 1024 * 1024 * 10, 
 maxRequestSize = 1024 * 1024 * 5 * 5)
@@ -30,7 +30,7 @@ public class PerformTitleSearch extends HttpServlet {
      */
     public PerformTitleSearch() {
         super();
-        TitleSearchManager.main(new String[0]);
+        //TitleSearchManager.main(new String[0]);
         // TODO Auto-generated constructor stub
     }
     
@@ -60,18 +60,25 @@ public class PerformTitleSearch extends HttpServlet {
 				manager.resetHouseHistory();
 			}
 			List<WarrantyDeed> listOfWDs = manager.getWarrantyDeed(bookNo, pageNo);
-			if(listOfWDs == null) {
+			if(listOfWDs == null || listOfWDs.size() == 0) {
 				List<String> errors = new ArrayList<String>();
 				errors.add("Warranty deed could not be obtained. Please try again later.");
 				this.getServletContext().setAttribute("errors", errors);
 				response.sendRedirect("/");
 				return;
+			} else if(listOfWDs.size() > 1) {
+				this.getServletContext().setAttribute("multipleResults", listOfWDs);
+				request.getRequestDispatcher("/warranty/select.jsp").forward(request, response);
+				return;
 			}
-			manager.addWarrantyDeedToHouseHistory(nextWD);
+			manager.addWarrantyDeedToHouseHistory(listOfWDs.get(0));
 			response.sendRedirect("/warranty/history");
 			return;
 		} else if(uri.endsWith("/warranty/history")) {
 			buildReport(request, response);
+		} else if(uri.endsWith("/warranty/select")) {
+			this.getServletContext().setAttribute("multipleResults", manager.getHouseHistory());
+			request.getRequestDispatcher("/warranty/select.jsp").forward(request, response);
 		}
 	}
 
@@ -92,6 +99,18 @@ public class PerformTitleSearch extends HttpServlet {
 				} else {
 					response.sendRedirect("/");
 				}
+				break;
+			case "chooseWD":
+				String index = request.getParameter("deedIndex");
+				try {
+					List<WarrantyDeed> list = (List<WarrantyDeed>) this.getServletContext().getAttribute("multipleResults");
+					WarrantyDeed chosenDeed = list.get(Integer.parseInt(index));
+					manager.addWarrantyDeedToHouseHistory(chosenDeed);
+					response.sendRedirect("/warranty/history");
+				} catch (Exception e) {
+					response.sendRedirect("/");
+				}
+				break;
 			default:
 				break;
 		}
@@ -103,8 +122,16 @@ public class PerformTitleSearch extends HttpServlet {
 		if(request.getParameter("next") != null) {
 			System.out.println("Book: " + bookNo + " Page: " + pageNo);
 			List<WarrantyDeed> potentialNextWDs = manager.getWarrantyDeed(bookNo, pageNo);
+			if(potentialNextWDs == null) {
+				List<String> errors = new ArrayList<String>();
+				errors.add("Warranty deed could not be obtained. Please try again later.");
+				this.getServletContext().setAttribute("errors", errors);
+				response.sendRedirect("/");
+				return;
+			}
 			if(potentialNextWDs.size() > 1) {
-				request.getRequestDispatcher("/warranty/multiple.jsp").forward(request, response);
+				this.getServletContext().setAttribute("multipleResults", potentialNextWDs);
+				request.getRequestDispatcher("/warranty/select.jsp").forward(request, response);
 				return;
 			}
 			manager.addWarrantyDeedToHouseHistory(potentialNextWDs.get(0));

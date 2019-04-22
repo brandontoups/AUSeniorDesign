@@ -33,9 +33,15 @@ public class ShowPDF extends HttpServlet {
 		// TODO Auto-generated method stub 
 		ServletContext context = this.getServletContext();
 		@SuppressWarnings("unchecked")
-		List<WarrantyDeed> history = (List<WarrantyDeed>) context.getAttribute("history");
+		List<WarrantyDeed> list = null;
+		String view = request.getParameter("view");
+		if(view.equals("select")) {
+			list = (List<WarrantyDeed>) context.getAttribute("multipleResults");
+		} else if(view.equals("history")) {
+			list = (List<WarrantyDeed>) context.getAttribute("history");
+		}
 		int index = Integer.parseInt(request.getParameter("deed"));
-		WarrantyDeed deed = history.get(index);
+		WarrantyDeed deed = list.get(index);
 		byte[] pdf = deed.getPDF();
 		if(pdf != null) {			
 			response.setContentType("application/pdf");
