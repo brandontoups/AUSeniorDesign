@@ -88,9 +88,9 @@ public class MongoDBDatabaseManager implements DatabaseManagerStore{
 			wd.setGrantors(strArray1);
 			wd.setPDF(byteArray);
 		
-			WarrantyDeed weed = new WarrantyDeed();
-			weed = wd;
-			w.add(count, weed);
+			WarrantyDeed deed = new WarrantyDeed();
+			deed = wd;
+			w.add(count, deed);
 			count = count + 1;
 		}
 		

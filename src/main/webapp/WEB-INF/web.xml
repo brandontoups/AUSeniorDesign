@@ -9,14 +9,20 @@
 		<welcome-file>default.htm</welcome-file>
 		<welcome-file>default.jsp</welcome-file>
 	</welcome-file-list>
-	<mime-mapping>
-	    <extension>css</extension>
-	    <mime-type>text/css</mime-type>
-	</mime-mapping>
 	<jsp-config>
 	    <jsp-property-group>
 	        <url-pattern>*.jsp</url-pattern>
 	        <scripting-invalid>true</scripting-invalid>
 	    </jsp-property-group>
 	</jsp-config>
+	<servlet>
+		<description>Main servlet for handling routes.</description>
+		<display-name>PerformTitleSearch</display-name>
+		<icon>
+			<small-icon>icons/small.gif</small-icon>
+			<large-icon>icons/small.gif</large-icon>
+		</icon>
+		<servlet-name>PerformTitleSearch</servlet-name>
+		<servlet-class>PerformTitleSearch.java</servlet-class>
+	</servlet>
 </web-app>

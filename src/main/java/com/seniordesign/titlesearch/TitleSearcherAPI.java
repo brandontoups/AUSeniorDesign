@@ -11,9 +11,10 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Properties;
-import org.python.util.PythonInterpreter;
 import org.python.core.PyObject;
+import org.python.util.PythonInterpreter;
 import org.python.core.PyString;
+import org.python.core.PySystemState;
 import org.python.core.PyDictionary;
 import com.seniordesign.titlesearch.WarrantyDeed;
 
@@ -32,13 +33,6 @@ public class TitleSearcherAPI {
 		//pythonPath = "/Users/minanarayanan/anaconda2/bin/python";
 		pythonFile = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "BeautifulSoupAPI.py";
 		imageDir = new File("").getAbsolutePath() + File.separator + "apps" + File.separator + "myapp.war" + File.separator + "warrantyDeedPDFs";
-		
-		Properties properties = System.getProperties();
-		//properties.setProperty("python.home", "C:\\liberty\\usr\\servers\\defaultServer\\apps\\myapp.war\\WEB-INF\\lib\\jython-standalone-2.7.1.jar");
-		properties.setProperty("python.home", "/home/vcap/app/wlp/usr/servers/defaultServer/apps/myapp.war/WEB-INF/lib/jython-standalone-2.7.1.jar");
-		//properties.setProperty("python.path", "C:\\Users\\Jaypt\\eclipse-workspace\\titlesearch\\src\\main\\webapp\\WEB-INF\\lib\\site-packages");
-		properties.setProperty("python.path", "/home/vcap/app/wlp/usr/servers/defaultServer/apps/myapp.war/WEB-INF/lib/site-packages");
-		PythonInterpreter.initialize(System.getProperties(), properties, new String[0]);
 	}
 
 	public static TitleSearcherAPI getInstance() {
@@ -86,9 +80,16 @@ public class TitleSearcherAPI {
 	public List<WarrantyDeed> getPDFWarrantyDeed(String firstNameOrBook, String lastNameOrPage, String county, String prePost) {
 		// TODO Change hardcoded state and county values - currently, 0 represents TN
 		//			and 0 represents Humphreys county
-		PythonInterpreter python = new PythonInterpreter();
 		List<WarrantyDeed> wdList = new ArrayList<WarrantyDeed>();
+		Properties properties = System.getProperties();
+		properties.setProperty("python.home", "C:\\liberty\\usr\\servers\\defaultServer\\apps\\myapp.war\\WEB-INF\\lib\\jython-standalone-2.7.1.jar");
+		properties.setProperty("python.path", "C:\\Users\\Jaypt\\eclipse-workspace\\titlesearch\\src\\main\\webapp\\WEB-INF\\lib\\site-packages");
+//		properties.setProperty("python.home", "/home/vcap/app/wlp/usr/servers/defaultServer/apps/myapp.war/WEB-INF/lib/jython-standalone-2.7.1.jar");
+//		properties.setProperty("python.path", "/home/vcap/app/wlp/usr/servers/defaultServer/apps/myapp.war/WEB-INF/lib/site-packages");
 		try {
+			PythonInterpreter.initialize(System.getProperties(), properties, new String[0]);
+			PySystemState.initialize();
+			PythonInterpreter python = new PythonInterpreter(null, new PySystemState());
 			//python.execfile("BeautifulSoupAPI.py"); 
 	         python.execfile(this.getPythonFile()); 
 	         PyObject exec = python.get("execute");
@@ -120,8 +121,10 @@ public class TitleSearcherAPI {
 				Path pathToFile = Paths.get(this.getImageDirectory() + File.separator + fileName);
 				byte[] buf = Files.readAllBytes(pathToFile);
 				wd.setPDF(buf);
+				Files.deleteIfExists(pathToFile);
 				python.cleanup();
-				python.close();
+				Thread.sleep(5000);
+				System.out.println("Warranty deed obtained. Passing it to Discovery");
 			}
 		} catch (Exception exc) {
 			exc.printStackTrace();

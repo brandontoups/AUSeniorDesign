@@ -238,7 +238,6 @@ class TitleSearcher:
     def writeImgToDirectory(self, imageDir, imgName, deed, s, urlTotal, deedList):
         with open(imageDir + os.sep + imgName + '.pdf', 'wb') as handle:
                 response = s.get(urlTotal, stream=True)
-                deed["pdf"] = response.content
                 if (self.bookNum != None):
                     deed["firstArg"] = self.bookNum
                     deed["secondArg"] = self.pageNum

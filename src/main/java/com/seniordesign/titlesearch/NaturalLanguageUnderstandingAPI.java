@@ -24,12 +24,18 @@ public class NaturalLanguageUnderstandingAPI {
 	// Variables integral to functionality of NLU service
 	  private static final String VERSION = "2018-11-16";
 	  private static final String URL = "https://gateway.watsonplatform.net/natural-language-understanding/api/";
-	  private static final String API_KEY = "xxx";
-	  private static final String MODEL_NO = "xxx";
+	  private static String API_KEY = "";
+	  private static String MODEL_NO = "";
 	  public static AnalysisResults json;
 	  public static String[] grantors;
 	  public static String[] grantees;
 	  private static NaturalLanguageUnderstanding nlu = null;
+	  
+	  public NaturalLanguageUnderstandingAPI() {
+		  ConfigProperties properties = new ConfigProperties();
+		  API_KEY = properties.getProperty("NLU_APIKEY");
+		  MODEL_NO = properties.getProperty("NLU_MODELNO");
+	  }
 	  
 
 	// Sets up NLU credentials and undergoes text analysis
@@ -44,7 +50,7 @@ public class NaturalLanguageUnderstandingAPI {
       // Creates NLU Service and adds credentials
 	  	NaturalLanguageUnderstanding nlu = new NaturalLanguageUnderstanding(VERSION, iamOptions);
 	    	
-	    	nlu.setIamCredentials(iamOptions);
+	    	//nlu.setIamCredentials(iamOptions);
 	    	nlu.setEndPoint(URL);
 
     	// Holds the text that we want to analyze --> should be a DYNAMIC variable
@@ -56,8 +62,8 @@ public class NaturalLanguageUnderstandingAPI {
 			  .model(MODEL_NO) // our custom WLK model...
 			  .build();
 
-			 KeywordsOptions keywordsOptions = new KeywordsOptions.Builder()
-			     .build();
+//			 KeywordsOptions keywordsOptions = new KeywordsOptions.Builder()
+//			     .build();
 			 
 			// Specified features that we want to extract
 			Features features = new Features.Builder()
