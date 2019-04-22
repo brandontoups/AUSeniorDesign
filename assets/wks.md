@@ -57,7 +57,7 @@ Go to the ```Version``` tab and click ```Create Version```. Now click ```Deploy`
 Do not go too long without downloading the Corpus and Type System (and trained model if on paid plan) to your system. Also, keep them under version control or email them to yourself for any doomsday scenarios (e.g., accidentally deleting the WKS instance you had been training for the entire semester).
 
 ## Extracting Entities
-Test the entity extraction. If you would like to test the NLU, you can do so in this /docs/ directory. You can find the  test files: [test.java](testNLU/test.java) and [nluAPI.java](testNLU/nluAPI.java) in the [testNLU](testNLU/) directory. These are pared down versions of the fully-implemented NLU files for testing purposes. The ```nluAPI.java``` is derived from the [Watson Developer Cloud Java SDK](https://github.com/watson-developer-cloud/java-sdk/tree/master/natural-language-understanding). 
+Test the entity extraction. If you would like to test the NLU, you can do so in this /assets/ directory. You can find the  test files: [test.java](testNLU/test.java) and [nluAPI.java](testNLU/nluAPI.java) in the [testNLU](testNLU/) directory. These are pared down versions of the fully-implemented NLU files for testing purposes. The ```nluAPI.java``` is derived from the [Watson Developer Cloud Java SDK](https://github.com/watson-developer-cloud/java-sdk/tree/master/natural-language-understanding). 
 
 You must add [the dependencies](https://github.com/watson-developer-cloud/java-sdk#jar) to your project's build path. 
 
