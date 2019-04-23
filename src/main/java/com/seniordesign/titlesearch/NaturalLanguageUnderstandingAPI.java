@@ -61,9 +61,6 @@ public class NaturalLanguageUnderstandingAPI {
 			EntitiesOptions entitiesOptions = new EntitiesOptions.Builder()
 			  .model(MODEL_NO) // our custom WLK model...
 			  .build();
-
-//			 KeywordsOptions keywordsOptions = new KeywordsOptions.Builder()
-//			     .build();
 			 
 			// Specified features that we want to extract
 			Features features = new Features.Builder()
