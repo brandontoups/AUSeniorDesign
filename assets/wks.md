@@ -83,10 +83,10 @@ MODEL_NO
 The actual NLU java file is found in the source code [here](/src/main/java/com/seniordesign/titlesearch/NaturalLanguageUnderstandingAPI.java)
 
 ## Type System
-The current type system is comprised of the entities WarrDeedPageNum, WarrDeedBookNum, Grantor, and Grantee. This must be applied before uploading your corpus, as the annotations are reliant on the type system. The type system up to this point is found in [/wksAssets/types-5c95...json/](wksAssets/types-5c953ef0-5481-11e9-9b8e-4bc9d96d3dde.json). To apply these to your WKS service, go to Assets > Entity Types > Upload.
+The current type system is comprised of the entities WarrDeedPageNum, WarrDeedBookNum, Grantor, and Grantee. This must be applied before uploading your corpus, as the annotations are reliant on the type system. The type system up to this point is found in [/wksAssets/types-022d7...json/](wksAssets/types-0222d720-55da-11e9-82c6-f3924b275be3.json). To apply these to your WKS service, go to Assets > Entity Types > Upload.
 
 ## Corpus
-The ground truth, or corpus, for this project up to this point can be found in [/wksAssets/corpus-5c95...zip/](wksAssets/corpus-5c953ef0-5481-11e9-9b8e-4bc9d96d3dde.zip/). This holds the documents and annotations available up to this point. To apply these to your WKS service, go to Assets > Documents > Upload Document Sets.
+The ground truth, or corpus, for this project up to this point can be found in [/wksAssets/corpus-022d7...zip/](wksAssets/corpus-0222d720-55da-11e9-82c6-f3924b275be3.zip). This holds the documents and annotations available up to this point. To apply these to your WKS service, go to Assets > Documents > Upload Document Sets.
 
 ## Run
 Running test.java with the proper credentials will output a JSON object containing the extracted entities from a group of text. A test text string has been inputted, with both grantors and grantees.
