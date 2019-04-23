@@ -76,13 +76,9 @@ public class NaturalLanguageUnderstandingAPI {
 			// Takes the parameters and sends them to nlu service for results
 			AnalysisResults response = nlu
 			  .analyze(parameters)
-			  .execute();
-			
+			  .execute();			
 
 			json = response;
-			
-			// Print
-			//System.out.println(json);
 			
 			// Return the result (AnalysisResults obj)
 			return json;
