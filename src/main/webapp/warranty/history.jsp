@@ -22,6 +22,10 @@
 			</tr>
 		</thead>
 		<tbody>
+			<%--
+				The history variable is given by the PerformTitleSearch.java servlet by putting it in the request scope.
+				${history} searches for a variable history in all four scopes (page, application, request, session) and finds it in the request scope.
+			 --%>
 			<c:forEach var="deed" items="${history}" varStatus="status">
 				<c:set scope="page" var="index" value="${status.count - 1}" />
 				<tr>

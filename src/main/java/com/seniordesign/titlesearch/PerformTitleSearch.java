@@ -15,9 +15,6 @@ import javax.servlet.http.HttpServletResponse;
  * Servlet implementation class PerformTitleSearch
  */
 @WebServlet(name = "/PerformTitleSearch", urlPatterns={"/search", "/warranty/validate", "/warranty/history", "/warranty/select"})
-@MultipartConfig(fileSizeThreshold = 1024 * 1024 * 10,
-maxFileSize = 1024 * 1024 * 10, 
-maxRequestSize = 1024 * 1024 * 5 * 5)
 public class PerformTitleSearch extends HttpServlet {
 	
 	TitleSearchManager manager = TitleSearchManager.getInstance();
@@ -49,6 +46,18 @@ public class PerformTitleSearch extends HttpServlet {
 		} else if(uri.endsWith("/search")) {
 			String bookNo = request.getParameter("book");
 			String pageNo = request.getParameter("page");
+			if(bookNo == null || pageNo == null) {
+				List<String> errors = new ArrayList<String>();
+				if(bookNo == null) {
+					errors.add("Please enter a book number to start the history.");
+				} 
+				if (pageNo == null) {					
+					errors.add("Please enter a book page number to start the history.");
+				}
+				this.getServletContext().setAttribute("errors", errors);
+				response.sendRedirect("/");
+				return;
+			}
 			try {
 				Integer.parseInt(bookNo);
 				Integer.parseInt(pageNo);
@@ -153,6 +162,7 @@ public class PerformTitleSearch extends HttpServlet {
 				}
 			} catch (NumberFormatException | NullPointerException e) {
 				response.sendError(400, "Bad Request");
+				response.sendRedirect("/");
 				return;
 			}
 			ServletContext context = this.getServletContext();
