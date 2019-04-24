@@ -23,7 +23,7 @@ public class DatabaseManagerAPI extends Application {
 //	@Path("/")
 //	@Produces("{application/json")
 	public WarrantyDeed getWarrantyDeed(String bookNumber, String pageNumber) {
-		WarrantyDeed wd = new WarrantyDeed();
+		WarrantyDeed wd = null;
 		
 		//List<String> bookNum = new ArrayList<String>();
 		for (WarrantyDeed deed : store.getAll()) {
@@ -39,9 +39,6 @@ public class DatabaseManagerAPI extends Application {
 					break;
 					
 				}
-			}
-			else {
-				wd = null;
 			}
 		}
 		return wd;

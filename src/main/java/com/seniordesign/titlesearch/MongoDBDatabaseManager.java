@@ -43,7 +43,7 @@ public class MongoDBDatabaseManager implements DatabaseManagerStore{
 		MongoClient cl = null;
 	
 			
-        MongoClientURI connectionString = new MongoClientURI("mongodb://admin:WVEFPQXQDDBCIDGH@sl-us-south-1-portal.56.dblayer.com:21871,sl-us-south-1-portal.54.dblayer.com:21871/compose?authSource=admin&ssl=true");
+        MongoClientURI connectionString = new MongoClientURI("mongodb://admin:WVEFPQXQDDBCIDGH@portal-ssl165-56.bmix-dal-yp-3c34fcfa-a90a-4f45-9384-25deebc35ef1.3180207644.composedb.com:21871,portal-ssl165-54.bmix-dal-yp-3c34fcfa-a90a-4f45-9384-25deebc35ef1.3180207644.composedb.com:21871/compose?authSource=admin&ssl=true");
         MongoClient mongoClient = new MongoClient(connectionString);
         cl = mongoClient;
 		
@@ -73,7 +73,10 @@ public class MongoDBDatabaseManager implements DatabaseManagerStore{
 			String[] strArray1 = Arrays.copyOf(a, a.length, String[].class);
 			
 			Binary byteArrayInBinary = (Binary) d.get("PDF");
-			byte[] byteArray = byteArrayInBinary.getData();
+			byte[] byteArray = null;
+			if(byteArrayInBinary != null) {				
+				byteArray = byteArrayInBinary.getData();
+			}
 			
 			wd.setBookNumber(d.getString("bookNumber"));
 			wd.setPageNumber(d.getString("pageNumber"));
