@@ -43,7 +43,7 @@ public class MongoDBDatabaseManager implements DatabaseManagerStore{
 		MongoClient cl = null;
 	
 			
-        MongoClientURI connectionString = new MongoClientURI("mongodb://admin:DFUGXMSLGXMYJAEH@portal-ssl914-52.bmix-dal-yp-bff5989d-92c8-4504-9502-4ea667bef63e.3300760346.composedb.com:19886,portal-ssl839-53.bmix-dal-yp-bff5989d-92c8-4504-9502-4ea667bef63e.3300760346.composedb.com:19886/compose?authSource=admin&ssl=true");
+        MongoClientURI connectionString = new MongoClientURI("mongodb://admin:WVEFPQXQDDBCIDGH@sl-us-south-1-portal.56.dblayer.com:21871,sl-us-south-1-portal.54.dblayer.com:21871/compose?authSource=admin&ssl=true");
         MongoClient mongoClient = new MongoClient(connectionString);
         cl = mongoClient;
 		
