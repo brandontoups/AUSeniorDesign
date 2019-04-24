@@ -82,10 +82,10 @@ public class TitleSearcherAPI {
 		//			and 0 represents Humphreys county
 		List<WarrantyDeed> wdList = new ArrayList<WarrantyDeed>();
 		Properties properties = System.getProperties();
-		properties.setProperty("python.home", "C:\\liberty\\usr\\servers\\defaultServer\\apps\\myapp.war\\WEB-INF\\lib\\jython-standalone-2.7.1.jar");
-		properties.setProperty("python.path", "C:\\Users\\Jaypt\\eclipse-workspace\\titlesearch\\src\\main\\webapp\\WEB-INF\\lib\\site-packages");
-//		properties.setProperty("python.home", "/home/vcap/app/wlp/usr/servers/defaultServer/apps/myapp.war/WEB-INF/lib/jython-standalone-2.7.1.jar");
-//		properties.setProperty("python.path", "/home/vcap/app/wlp/usr/servers/defaultServer/apps/myapp.war/WEB-INF/lib/site-packages");
+//		properties.setProperty("python.home", "C:\\liberty\\usr\\servers\\defaultServer\\apps\\myapp.war\\WEB-INF\\lib\\jython-standalone-2.7.1.jar");
+//		properties.setProperty("python.path", "C:\\Users\\Jaypt\\eclipse-workspace\\titlesearch\\src\\main\\webapp\\WEB-INF\\lib\\site-packages");
+		properties.setProperty("python.home", "/home/vcap/app/wlp/usr/servers/defaultServer/apps/myapp.war/WEB-INF/lib/jython-standalone-2.7.1.jar");
+		properties.setProperty("python.path", "/home/vcap/app/wlp/usr/servers/defaultServer/apps/myapp.war/WEB-INF/lib/site-packages");
 		try {
 			PythonInterpreter.initialize(System.getProperties(), properties, new String[0]);
 			PySystemState.initialize();
